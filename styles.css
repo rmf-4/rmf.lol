@@ -146,9 +146,10 @@ h2 {
     max-width: 600px;
     margin: 0 auto;
     padding: 2rem;
-    background: rgba(0, 0, 0, 0.9);
+    background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
+    backdrop-filter: blur(10px);
 }
 
 .contact-container h2 {
@@ -158,15 +159,14 @@ h2 {
 }
 
 .input-group {
-    position: relative;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .input-group input,
 .input-group textarea {
     width: 100%;
     padding: 1rem;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     color: #fff;
@@ -174,44 +174,23 @@ h2 {
     transition: all 0.3s ease;
 }
 
-.input-group textarea {
-    min-height: 150px;
-    resize: vertical;
-}
-
-.input-group label {
-    position: absolute;
-    left: 1rem;
-    top: 1rem;
-    color: #888;
-    transition: all 0.3s ease;
-    pointer-events: none;
-}
-
 .input-group input:focus,
 .input-group textarea:focus {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.7);
     border-color: #4CAF50;
     outline: none;
 }
 
-.input-group input:focus + label,
-.input-group textarea:focus + label,
-.input-group input:valid + label,
-.input-group textarea:valid + label {
-    transform: translateY(-2rem);
-    font-size: 0.9rem;
-    color: #4CAF50;
+.input-group label {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 button {
-    width: 100%;
-    padding: 1rem;
     background: #4CAF50;
     color: #fff;
     border: none;
+    padding: 1rem 2rem;
     border-radius: 10px;
-    font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.3s ease;
 }

@@ -23,12 +23,13 @@ body {
 
 /* Header Styles */
 header {
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.95);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
+    backdrop-filter: blur(5px);
 }
 
 nav {
@@ -43,6 +44,10 @@ nav {
 .logo h1 {
     font-size: 1.5rem;
     font-weight: 700;
+    color: var(--text-color);
+}
+
+.highlight {
     color: var(--primary-color);
 }
 
@@ -57,38 +62,81 @@ nav a {
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
+    position: relative;
 }
 
 nav a:hover, nav a.active {
     color: var(--primary-color);
 }
 
+nav a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+nav a:hover::after, nav a.active::after {
+    width: 100%;
+}
+
 /* Hero Section */
 .hero {
     padding: 8rem 2rem 4rem;
     background: linear-gradient(135deg, var(--accent-color) 0%, #ffffff 100%);
-    text-align: center;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
 }
 
 .hero-content {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
+    text-align: center;
 }
 
 .hero h2 {
-    font-size: 3rem;
+    font-size: 3.5rem;
     margin-bottom: 1rem;
     color: var(--text-color);
-}
-
-.highlight {
-    color: var(--primary-color);
+    line-height: 1.2;
 }
 
 .subtitle {
     font-size: 1.25rem;
     color: var(--dark-gray);
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    margin: 3rem 0;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    color: var(--dark-gray);
+    font-weight: 500;
 }
 
 /* Buttons */
@@ -105,6 +153,7 @@ nav a:hover, nav a.active {
     font-weight: 500;
     text-decoration: none;
     transition: all 0.3s ease;
+    font-size: 1.1rem;
 }
 
 .btn.primary {
@@ -125,13 +174,13 @@ nav a:hover, nav a.active {
 
 /* Services Section */
 #services {
-    padding: 4rem 2rem;
+    padding: 6rem 2rem;
     background-color: var(--light-gray);
 }
 
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -142,36 +191,53 @@ nav a:hover, nav a.active {
     padding: 2rem;
     border-radius: 1rem;
     text-align: center;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .service-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0,0,0,0.1);
 }
 
-.service-card i {
-    font-size: 2.5rem;
+.service-icon {
+    width: 80px;
+    height: 80px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.service-icon i {
+    font-size: 2rem;
     color: var(--primary-color);
-    margin-bottom: 1rem;
 }
 
 .service-card h3 {
     margin-bottom: 1rem;
     color: var(--text-color);
+    font-size: 1.5rem;
 }
 
 .learn-more {
     display: inline-block;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     color: var(--primary-color);
     text-decoration: none;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.learn-more:hover {
+    transform: translateX(5px);
 }
 
 /* About Section */
 .about {
-    padding: 4rem 2rem;
+    padding: 6rem 2rem;
     background-color: white;
 }
 
@@ -183,24 +249,30 @@ nav a:hover, nav a.active {
 .features {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
+    gap: 3rem;
+    margin-top: 3rem;
 }
 
 .feature {
     text-align: center;
     padding: 2rem;
+    transition: all 0.3s ease;
 }
 
 .feature i {
-    font-size: 2rem;
+    font-size: 2.5rem;
     color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.feature h3 {
     margin-bottom: 1rem;
+    font-size: 1.3rem;
 }
 
 /* Contact Section */
 #contact {
-    padding: 4rem 2rem;
+    padding: 6rem 2rem;
     background-color: var(--light-gray);
 }
 
@@ -209,7 +281,7 @@ nav a:hover, nav a.active {
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 2fr;
-    gap: 2rem;
+    gap: 3rem;
 }
 
 .contact-info {
@@ -227,7 +299,7 @@ nav a:hover, nav a.active {
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
 .contact-form {
@@ -238,15 +310,20 @@ nav a:hover, nav a.active {
 }
 
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-input, textarea {
+input, textarea, select {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
     font-family: inherit;
+    font-size: 1rem;
+}
+
+select {
+    background-color: white;
 }
 
 textarea {
@@ -266,16 +343,21 @@ footer {
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: 3rem;
+    margin-bottom: 3rem;
 }
 
 .footer-section h3 {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
 }
 
 .footer-section ul {
     list-style: none;
+}
+
+.footer-section ul li {
+    margin-bottom: 0.5rem;
 }
 
 .footer-section a {
@@ -291,10 +373,18 @@ footer {
 .social-links {
     display: flex;
     gap: 1rem;
+    margin-top: 1.5rem;
 }
 
 .social-links a {
     font-size: 1.5rem;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    transform: translateY(-3px);
+    color: var(--primary-color);
 }
 
 .footer-bottom {
@@ -317,20 +407,17 @@ footer {
     }
 
     .hero h2 {
-        font-size: 2rem;
+        font-size: 2.5rem;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: 2rem;
     }
 
     .contact-container {
         grid-template-columns: 1fr;
     }
-}
-
-/* Section Headers */
-section h2 {
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 3rem;
-    color: var(--text-color);
 }
 
 /* Animations */

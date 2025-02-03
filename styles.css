@@ -135,9 +135,10 @@ h2 {
     max-width: 600px;
     margin: 0 auto;
     padding: 2rem;
-    background: transparent !important;
+    background: rgba(0, 0, 0, 0.3) !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
+    backdrop-filter: blur(10px);
 }
 
 .contact-container h2 {
@@ -145,12 +146,12 @@ h2 {
     margin-bottom: 2rem;
     font-size: 2rem;
     color: #fff;
+    border-bottom: none;
 }
 
 .input-group {
     position: relative;
     margin-bottom: 1.5rem;
-    background: transparent !important;
 }
 
 .input-group input,
@@ -169,7 +170,6 @@ h2 {
     left: 1rem;
     top: 1rem;
     color: rgba(255, 255, 255, 0.7);
-    transition: all 0.3s ease;
     pointer-events: none;
 }
 

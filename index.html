@@ -147,12 +147,14 @@
         }
 
         async function updateAllPrices() {
-            // Update each stock with a delay to avoid API rate limits
-            await updatePrice('RKLB', 8.75);
-            await new Promise(resolve => setTimeout(resolve, 12000)); // 12 second delay
-            await updatePrice('PLTR', 31.00);
-            await new Promise(resolve => setTimeout(resolve, 12000));
-            await updatePrice('HUT', 19.50);
+            // Update all stocks simultaneously using Promise.all
+            const stocks = [
+                { symbol: 'RKLB', entry: 8.75 },
+                { symbol: 'PLTR', entry: 31.00 },
+                { symbol: 'HUT', entry: 19.50 }
+            ];
+
+            await Promise.all(stocks.map(stock => updatePrice(stock.symbol, stock.entry)));
         }
 
         // Initial update

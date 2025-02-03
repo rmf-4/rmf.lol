@@ -635,9 +635,9 @@ footer {
     animation: fadeIn 0.5s ease-out forwards;
 }
 
-/* Add these new styles for the About section */
+/* Update About section styles */
 .about-container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 2rem;
     background: rgba(255, 255, 255, 0.05);
@@ -645,27 +645,71 @@ footer {
     backdrop-filter: blur(10px);
 }
 
-.about-text {
-    font-size: 1.2rem;
-    line-height: 1.8;
-    color: rgba(255, 255, 255, 0.9);
+.about-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    align-items: center;
+}
+
+.founder-info {
     margin-bottom: 2rem;
 }
 
-.quote {
-    border-left: 4px solid #4CAF50;
-    padding-left: 2rem;
-    margin: 2rem 0;
+.founder-info h3 {
+    font-size: 1.8rem;
+    color: #4CAF50;
+    margin-bottom: 0.5rem;
 }
 
-.quote blockquote {
-    font-size: 1.4rem;
-    font-style: italic;
-    color: #fff;
+.credentials {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
     margin-bottom: 1rem;
+    line-height: 1.4;
 }
 
-.quote cite {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1rem;
+.linkedin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #0077b5;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.linkedin-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.profile-image {
+    position: relative;
+}
+
+.founder-image {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-image {
+        order: -1;
+        text-align: center;
+    }
+
+    .founder-image {
+        max-width: 250px;
+    }
 } 

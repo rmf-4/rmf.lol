@@ -157,15 +157,15 @@
                 <h2>Get in Touch</h2>
                 <form id="contactForm" onsubmit="return sendEmail(event)">
                     <div class="input-group">
-                        <input type="text" id="name" placeholder=" " required>
+                        <input type="text" id="name" required autocomplete="off">
                         <label for="name">Name</label>
                     </div>
                     <div class="input-group">
-                        <input type="email" id="email" placeholder=" " required>
+                        <input type="email" id="email" required autocomplete="off">
                         <label for="email">Email</label>
                     </div>
                     <div class="input-group">
-                        <textarea id="message" placeholder=" " required></textarea>
+                        <textarea id="message" required></textarea>
                         <label for="message">Message</label>
                     </div>
                     <button type="submit">Send Message</button>

@@ -18,6 +18,7 @@
         <div class="nav-content">
             <h1>RYFR Trading</h1>
             <div class="nav-links">
+                <a href="#about">About</a>
                 <a href="#picks">Picks</a>
                 <a href="#contact">Contact</a>
             </div>
@@ -25,6 +26,21 @@
     </nav>
 
     <main>
+        <section id="about" class="fade-in">
+            <div class="about-container">
+                <h2>About Us</h2>
+                <p class="about-text">
+                    At RYFR Trading, we believe in the power of strategic, long-term investment decisions. Our journey began with a simple principle: identify undervalued companies with strong growth potential and maintain unwavering conviction through market volatility.
+                </p>
+                <div class="quote">
+                    <blockquote>
+                        "The stock market is a device for transferring money from the impatient to the patient."
+                    </blockquote>
+                    <cite>- Warren Buffett</cite>
+                </div>
+            </div>
+        </section>
+
         <section id="picks" class="fade-in">
             <div class="picks-grid">
                 <div class="stock-card">
@@ -95,6 +111,29 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="stock-card">
+                    <div class="stock-content">
+                        <div class="stock-header">
+                            <h2>CVNA</h2>
+                            <span class="stock-name">Carvana</span>
+                        </div>
+                        <div class="stock-price">
+                            <div class="price-row">
+                                <span>Entry</span>
+                                <span class="entry-price">$113.48</span>
+                            </div>
+                            <div class="price-row">
+                                <span>Current</span>
+                                <span class="live-price" id="CVNA-price">Loading...</span>
+                            </div>
+                            <div class="price-row">
+                                <span>Gain/Loss</span>
+                                <span class="gain-loss" id="CVNA-gain" data-entry="113.48">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -156,7 +195,8 @@
             const stocks = [
                 { symbol: 'RKLB', entry: 8.75 },
                 { symbol: 'PLTR', entry: 31.00 },
-                { symbol: 'HUT', entry: 19.50 }
+                { symbol: 'HUT', entry: 19.50 },
+                { symbol: 'CVNA', entry: 113.48 }
             ];
 
             // Load all stocks simultaneously

@@ -34,11 +34,11 @@
                             </div>
                             <div class="price-row">
                                 <span>Current</span>
-                                <span class="live-price" data-symbol="RKLB">Loading...</span>
+                                <span class="live-price" id="RKLB-price">Loading...</span>
                             </div>
                             <div class="price-row">
                                 <span>Gain/Loss</span>
-                                <span class="gain-loss" data-entry="8.75">--</span>
+                                <span class="gain-loss" id="RKLB-gain" data-entry="8.75">--</span>
                             </div>
                         </div>
                     </div>
@@ -57,11 +57,11 @@
                             </div>
                             <div class="price-row">
                                 <span>Current</span>
-                                <span class="live-price" data-symbol="PLTR">Loading...</span>
+                                <span class="live-price" id="PLTR-price">Loading...</span>
                             </div>
                             <div class="price-row">
                                 <span>Gain/Loss</span>
-                                <span class="gain-loss" data-entry="31.00">--</span>
+                                <span class="gain-loss" id="PLTR-gain" data-entry="31.00">--</span>
                             </div>
                         </div>
                     </div>
@@ -80,11 +80,11 @@
                             </div>
                             <div class="price-row">
                                 <span>Current</span>
-                                <span class="live-price" data-symbol="HUT">Loading...</span>
+                                <span class="live-price" id="HUT-price">Loading...</span>
                             </div>
                             <div class="price-row">
                                 <span>Gain/Loss</span>
-                                <span class="gain-loss" data-entry="19.50">--</span>
+                                <span class="gain-loss" id="HUT-gain" data-entry="19.50">--</span>
                             </div>
                         </div>
                     </div>
@@ -115,38 +115,46 @@
     </main>
 
     <script>
-        // Function to format price with color
         function formatPrice(current, entry) {
             const diff = ((current - entry) / entry * 100).toFixed(2);
             const color = diff >= 0 ? '#4CAF50' : '#FF4444';
             return `<span style="color: ${color}">${diff}%</span>`;
         }
 
-        // Function to update stock prices using Yahoo Finance
-        async function updatePrices() {
-            const symbols = ['RKLB', 'PLTR', 'HUT'];
-            
-            symbols.forEach(async (symbol) => {
-                try {
-                    const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`);
-                    const data = await response.json();
-                    
+        async function updatePrice(symbol, entryPrice) {
+            try {
+                const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`);
+                const data = await response.json();
+                
+                if (data && data.chart && data.chart.result && data.chart.result[0]) {
                     const currentPrice = data.chart.result[0].meta.regularMarketPrice;
-                    const priceElement = document.querySelector(`.live-price[data-symbol="${symbol}"]`);
-                    const gainLossElement = document.querySelector(`.gain-loss[data-entry]`);
-                    const entryPrice = parseFloat(gainLossElement.dataset.entry);
-
-                    priceElement.textContent = `$${currentPrice.toFixed(2)}`;
-                    gainLossElement.innerHTML = formatPrice(currentPrice, entryPrice);
-                } catch (error) {
-                    console.error(`Error fetching price for ${symbol}:`, error);
+                    
+                    // Update price display
+                    const priceElement = document.getElementById(`${symbol}-price`);
+                    if (priceElement) {
+                        priceElement.textContent = `$${currentPrice.toFixed(2)}`;
+                    }
+                    
+                    // Update gain/loss display
+                    const gainElement = document.getElementById(`${symbol}-gain`);
+                    if (gainElement) {
+                        gainElement.innerHTML = formatPrice(currentPrice, entryPrice);
+                    }
                 }
-            });
+            } catch (error) {
+                console.error(`Error fetching ${symbol}:`, error);
+            }
         }
 
-        // Update prices every 5 seconds (to avoid rate limiting)
-        setInterval(updatePrices, 5000);
-        updatePrices(); // Initial update
+        function updateAllPrices() {
+            updatePrice('RKLB', 8.75);
+            updatePrice('PLTR', 31.00);
+            updatePrice('HUT', 19.50);
+        }
+
+        // Update prices every minute
+        updateAllPrices(); // Initial update
+        setInterval(updateAllPrices, 60000); // Update every minute
 
         // Smooth scroll for navigation
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

@@ -5,10 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RYFR Trading</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>RYFR Trading</h1>
-    </div>
+    <nav>
+        <div class="nav-content">
+            <h1>RYFR Trading</h1>
+            <div class="nav-links">
+                <a href="#current-picks">Current Picks</a>
+                <a href="#history">History</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section id="current-picks">
+            <h2>Current Stock Picks</h2>
+            <div class="picks-grid">
+                <div class="stock-pick">
+                    <div class="stock-header">
+                        <h3>RKLB</h3>
+                        <span class="stock-name">Rocket Lab</span>
+                    </div>
+                    <div class="stock-details">
+                        <p class="entry">Entry: $8.75</p>
+                        <p class="current">Current: $13.50</p>
+                        <div class="gain-indicator positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+54.3%</span>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div class="gain-line"></div>
+                    </div>
+                </div>
+
+                <div class="stock-pick">
+                    <div class="stock-header">
+                        <h3>PLTR</h3>
+                        <span class="stock-name">Palantir</span>
+                    </div>
+                    <div class="stock-details">
+                        <p class="entry">Entry: $31.00</p>
+                        <p class="current">Current: $24.85</p>
+                        <div class="gain-indicator negative">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>-19.8%</span>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div class="loss-line"></div>
+                    </div>
+                </div>
+
+                <div class="stock-pick">
+                    <div class="stock-header">
+                        <h3>HUT</h3>
+                        <span class="stock-name">Hut 8 Mining</span>
+                    </div>
+                    <div class="stock-details">
+                        <p class="entry">Entry: $19.50</p>
+                        <p class="current">Current: $9.75</p>
+                        <div class="gain-indicator negative">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>-50.0%</span>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div class="loss-line"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="history">
+            <h2>Trading History</h2>
+            <div class="history-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Stock</th>
+                            <th>Entry Date</th>
+                            <th>Exit Date</th>
+                            <th>Entry Price</th>
+                            <th>Exit Price</th>
+                            <th>Return</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Example row - you can duplicate this for each trade -->
+                        <tr>
+                            <td>SYMBOL</td>
+                            <td>MM/DD/YYYY</td>
+                            <td>MM/DD/YYYY</td>
+                            <td>$XX.XX</td>
+                            <td>$XX.XX</td>
+                            <td class="positive">+XX%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <div class="contact-form">
+                <form id="contactForm">
+                    <input type="text" placeholder="Name" required>
+                    <input type="email" placeholder="Email" required>
+                    <textarea placeholder="Message" required></textarea>
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

@@ -1,13 +1,3 @@
-:root {
-    --primary-color: #2563eb;
-    --secondary-color: #1e40af;
-    --background-color: #ffffff;
-    --text-color: #1f2937;
-    --light-gray: #f3f4f6;
-    --dark-gray: #4b5563;
-    --accent-color: #dbeafe;
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -19,7 +9,6 @@ body {
     color: #fff;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
-    overflow-x: hidden;
 }
 
 /* Navigation */
@@ -146,7 +135,7 @@ h2 {
     max-width: 600px;
     margin: 0 auto;
     padding: 2rem;
-    background: transparent !important;
+    background: rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     backdrop-filter: blur(10px);
@@ -163,8 +152,8 @@ h2 {
 }
 
 .input-group {
+    position: relative;
     margin-bottom: 1.5rem;
-    background: transparent !important;
 }
 
 .input-group input,
@@ -176,7 +165,6 @@ h2 {
     border-radius: 10px;
     color: #fff !important;
     font-size: 1rem;
-    transition: all 0.3s ease;
 }
 
 .input-group input:focus,

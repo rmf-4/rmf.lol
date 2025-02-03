@@ -103,15 +103,15 @@
                 <h2>Get in Touch</h2>
                 <form id="contactForm" onsubmit="return sendEmail(event)">
                     <div class="input-group">
-                        <input type="text" id="name" required>
+                        <input type="text" id="name" placeholder=" " required>
                         <label for="name">Name</label>
                     </div>
                     <div class="input-group">
-                        <input type="email" id="email" required>
+                        <input type="email" id="email" placeholder=" " required>
                         <label for="email">Email</label>
                     </div>
                     <div class="input-group">
-                        <textarea id="message" required></textarea>
+                        <textarea id="message" placeholder=" " required></textarea>
                         <label for="message">Message</label>
                     </div>
                     <button type="submit">Send Message</button>
@@ -197,20 +197,20 @@
         function sendEmail(e) {
             e.preventDefault();
 
-            const params = {
+            const templateParams = {
                 from_name: document.getElementById('name').value,
                 from_email: document.getElementById('email').value,
-                message: document.getElementById('message').value,
-                to_email: 'ryanfrank2006@gmail.com'
+                message: document.getElementById('message').value
             };
 
-            const button = e.target.querySelector('button');
+            const button = document.querySelector('#contactForm button');
             const originalText = button.textContent;
             button.textContent = 'Sending...';
             button.disabled = true;
 
-            emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', params)
-                .then(function() {
+            emailjs.send('service_i2590qd', 'template_psg25a8', templateParams)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
                     button.textContent = 'Message Sent!';
                     document.getElementById('contactForm').reset();
                     setTimeout(() => {
@@ -218,7 +218,7 @@
                         button.disabled = false;
                     }, 3000);
                 }, function(error) {
-                    console.error('Failed to send email:', error);
+                    console.error('FAILED...', error);
                     button.textContent = 'Failed to Send';
                     setTimeout(() => {
                         button.textContent = originalText;

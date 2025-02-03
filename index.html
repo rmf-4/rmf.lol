@@ -122,29 +122,30 @@
             return `<span style="color: ${color}">${diff}%</span>`;
         }
 
-        // Function to update stock prices
+        // Function to update stock prices using Yahoo Finance
         async function updatePrices() {
             const symbols = ['RKLB', 'PLTR', 'HUT'];
-            try {
-                const response = await fetch(`https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${symbols.join(',')}&apiKey=YOUR_POLYGON_API_KEY`);
-                const data = await response.json();
-                
-                data.tickers.forEach(ticker => {
-                    const priceElement = document.querySelector(`.live-price[data-symbol="${ticker.ticker}"]`);
-                    const gainLossElement = document.querySelector(`.gain-loss[data-symbol="${ticker.ticker}"]`);
-                    const entryPrice = parseFloat(gainLossElement.dataset.entry);
+            
+            symbols.forEach(async (symbol) => {
+                try {
+                    const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`);
+                    const data = await response.json();
                     
-                    const currentPrice = ticker.lastTrade.p;
+                    const currentPrice = data.chart.result[0].meta.regularMarketPrice;
+                    const priceElement = document.querySelector(`.live-price[data-symbol="${symbol}"]`);
+                    const gainLossElement = document.querySelector(`.gain-loss[data-entry]`);
+                    const entryPrice = parseFloat(gainLossElement.dataset.entry);
+
                     priceElement.textContent = `$${currentPrice.toFixed(2)}`;
                     gainLossElement.innerHTML = formatPrice(currentPrice, entryPrice);
-                });
-            } catch (error) {
-                console.error('Error fetching prices:', error);
-            }
+                } catch (error) {
+                    console.error(`Error fetching price for ${symbol}:`, error);
+                }
+            });
         }
 
-        // Update prices every second
-        setInterval(updatePrices, 1000);
+        // Update prices every 5 seconds (to avoid rate limiting)
+        setInterval(updatePrices, 5000);
         updatePrices(); // Initial update
 
         // Smooth scroll for navigation

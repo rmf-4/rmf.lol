@@ -130,12 +130,12 @@ h2 {
     font-weight: 600;
 }
 
-/* Contact form */
+/* Contact form styles - complete rewrite */
 .contact-container {
     max-width: 600px;
     margin: 0 auto;
     padding: 2rem;
-    background: rgba(0, 0, 0, 0.3) !important;
+    background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     backdrop-filter: blur(10px);
@@ -144,53 +144,52 @@ h2 {
 .contact-container h2 {
     text-align: center;
     margin-bottom: 2rem;
-    font-size: 2rem;
     color: #fff;
     border-bottom: none;
 }
 
 .input-group {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .input-group input,
 .input-group textarea {
     width: 100%;
     padding: 1rem;
-    background: rgba(0, 0, 0, 0.5) !important;
+    font-size: 1rem;
+    background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    color: #fff !important;
-    font-size: 1rem;
+    color: #fff;
+    transition: border-color 0.3s ease;
+}
+
+.input-group textarea {
+    min-height: 120px;
+    resize: vertical;
 }
 
 .input-group label {
     position: absolute;
     left: 1rem;
-    top: 0;
-    transform: translateY(1rem);
+    top: 1rem;
+    padding: 0 0.25rem;
     color: rgba(255, 255, 255, 0.7);
-    transition: all 0.2s ease;
+    font-size: 1rem;
+    transition: all 0.3s ease;
     pointer-events: none;
 }
 
 /* Move label up when input is focused or has content */
-.input-group input:focus ~ label,
-.input-group textarea:focus ~ label,
-.input-group input:valid ~ label,
-.input-group textarea:valid ~ label {
-    transform: translateY(-0.5rem);
-    font-size: 0.8rem;
+.input-group input:focus + label,
+.input-group textarea:focus + label,
+.input-group input:not(:placeholder-shown) + label,
+.input-group textarea:not(:placeholder-shown) + label {
+    transform: translateY(-1.75rem) translateX(-0.25rem);
+    font-size: 0.85rem;
     color: #4CAF50;
-    background-color: transparent;
-    padding: 0 0.5rem;
-}
-
-/* Style for the textarea */
-.input-group textarea {
-    min-height: 120px;
-    resize: vertical;
+    background: transparent;
 }
 
 /* Focus styles */
@@ -200,20 +199,28 @@ h2 {
     border-color: #4CAF50;
 }
 
-button {
-    background: #4CAF50 !important;
-    color: #fff !important;
+/* Submit button */
+#contactForm button {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    color: #fff;
+    background: #4CAF50;
     border: none;
-    padding: 1rem 2rem;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    width: 100%;
 }
 
-button:hover {
-    background: #45a049 !important;
+#contactForm button:hover {
+    background: #45a049;
     transform: translateY(-2px);
+}
+
+#contactForm button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* Animations */

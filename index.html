@@ -121,7 +121,7 @@
     </main>
 
     <script>
-        const API_KEY = 'cn8tl0pr01qjp8gj9s2gcn8tl0pr01qjp8gj9s2g'; // Finnhub API key
+        const API_KEY = 'ct9nk81r01quh43ogj30ct9nk81r01quh43ogj3g'; // Your Finnhub API key
 
         function formatPrice(current, entry) {
             const diff = ((current - entry) / entry * 100).toFixed(2);
@@ -147,19 +147,8 @@
                 }
             } catch (error) {
                 console.error(`Error fetching ${symbol}:`, error);
-                // Fallback to a different endpoint if the first one fails
-                try {
-                    const fallbackResponse = await fetch(`https://finnhub.io/api/v1/stock/price-target?symbol=${symbol}&token=${API_KEY}`);
-                    const fallbackData = await fallbackResponse.json();
-                    const currentPrice = fallbackData.targetMean;
-                    
-                    priceElement.textContent = `$${currentPrice.toFixed(2)}`;
-                    gainElement.innerHTML = formatPrice(currentPrice, entryPrice);
-                } catch (fallbackError) {
-                    console.error(`Fallback error for ${symbol}:`, fallbackError);
-                    priceElement.textContent = 'Error loading';
-                    gainElement.textContent = '--';
-                }
+                priceElement.textContent = 'Error loading';
+                gainElement.textContent = '--';
             }
         }
 
@@ -175,9 +164,7 @@
         }
 
         // Initial update as soon as page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            updateAllPrices();
-        });
+        updateAllPrices();
 
         // Update every 10 seconds
         setInterval(updateAllPrices, 10000);

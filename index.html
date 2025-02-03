@@ -6,6 +6,12 @@
     <title>RYFR Trading</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        (function() {
+            emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your EmailJS public key
+        })();
+    </script>
 </head>
 <body>
     <nav>
@@ -95,7 +101,7 @@
         <section id="contact" class="fade-in">
             <div class="contact-container">
                 <h2>Get in Touch</h2>
-                <form id="contactForm">
+                <form id="contactForm" onsubmit="return sendEmail(event)">
                     <div class="input-group">
                         <input type="text" id="name" required>
                         <label for="name">Name</label>
@@ -172,6 +178,43 @@
                 });
             });
         });
+    </script>
+
+    <script>
+        function sendEmail(e) {
+            e.preventDefault();
+
+            const params = {
+                from_name: document.getElementById('name').value,
+                from_email: document.getElementById('email').value,
+                message: document.getElementById('message').value,
+                to_email: 'ryanfrank2006@gmail.com'
+            };
+
+            const button = e.target.querySelector('button');
+            const originalText = button.textContent;
+            button.textContent = 'Sending...';
+            button.disabled = true;
+
+            emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', params)
+                .then(function() {
+                    button.textContent = 'Message Sent!';
+                    document.getElementById('contactForm').reset();
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 3000);
+                }, function(error) {
+                    console.error('Failed to send email:', error);
+                    button.textContent = 'Failed to Send';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 3000);
+                });
+
+            return false;
+        }
     </script>
 </body>
 </html>

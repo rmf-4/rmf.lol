@@ -655,12 +655,12 @@ footer {
 .about-grid {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
-    gap: 2rem;
-    align-items: center;
+    gap: 3rem;
+    align-items: start;
 }
 
 .founder-info {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .founder-info h3 {
@@ -696,6 +696,10 @@ footer {
 
 .profile-image {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 1rem;
 }
 
 .founder-image {
@@ -714,6 +718,7 @@ footer {
     .profile-image {
         order: -1;
         text-align: center;
+        margin-bottom: 2rem;
     }
 
     .founder-image {

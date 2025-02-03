@@ -163,42 +163,41 @@ h2 {
     border-radius: 10px;
     color: #fff !important;
     font-size: 1rem;
-    transition: all 0.3s ease;
 }
 
 .input-group label {
     position: absolute;
     left: 1rem;
-    top: 1rem;
+    top: 0;
+    transform: translateY(1rem);
     color: rgba(255, 255, 255, 0.7);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     pointer-events: none;
-    font-size: 1rem;
-    background: transparent;
 }
 
-/* This makes the label float up when the input is focused or has content */
+/* Move label up when input is focused or has content */
 .input-group input:focus ~ label,
 .input-group textarea:focus ~ label,
-.input-group input:not(:placeholder-shown) ~ label,
-.input-group textarea:not(:placeholder-shown) ~ label {
-    transform: translateY(-2rem);
+.input-group input:valid ~ label,
+.input-group textarea:valid ~ label {
+    transform: translateY(-0.5rem);
     font-size: 0.8rem;
     color: #4CAF50;
-    background: transparent;
+    background-color: transparent;
+    padding: 0 0.5rem;
 }
 
-/* This adds a subtle highlight when focused */
-.input-group input:focus,
-.input-group textarea:focus {
-    border-color: #4CAF50;
-    outline: none;
-}
-
-/* Make sure the textarea is tall enough */
+/* Style for the textarea */
 .input-group textarea {
     min-height: 120px;
     resize: vertical;
+}
+
+/* Focus styles */
+.input-group input:focus,
+.input-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
 }
 
 button {

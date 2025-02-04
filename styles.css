@@ -926,3 +926,57 @@ footer {
 .profile img:hover {
     transform: scale(1.1);
 }
+
+.about-content {
+    position: relative;
+    padding: 2rem;
+}
+
+.nav-links {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 2rem;
+}
+
+.left-content {
+    position: absolute;
+    left: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.left-content p {
+    margin: 1rem 0;
+    color: white;
+}
+
+.positive {
+    color: #4CAF50;
+}
+
+.main-content {
+    text-align: center;
+    margin: 0 auto;
+}
+
+.main-content img {
+    width: 150px;
+    height: 150px;
+    transition: transform 0.3s ease;
+}
+
+.main-content img:hover {
+    transform: scale(1.1);
+}
+
+.quote {
+    margin-top: 2rem;
+    border-left: 3px solid #4CAF50;
+    padding-left: 1rem;
+}

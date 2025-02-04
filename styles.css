@@ -946,7 +946,7 @@ footer {
 
 .left-content {
     position: absolute;
-    left: 2rem;
+    left: 0;
     top: 50%;
     transform: translateY(-50%);
 }
@@ -982,4 +982,29 @@ footer {
     margin-top: 2rem;
     border-left: 3px solid #4CAF50;
     padding-left: 1rem;
+}
+
+/* Fix image hover */
+img {
+    width: 150px;
+    height: 150px;
+    transition: all 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+/* Move performance text more to the left */
+.left-content {
+    position: absolute;
+    left: 0;  /* Changed from 2rem to 0 */
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.left-content p {
+    margin: 1rem 0;
+    color: white;
 }

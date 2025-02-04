@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
         (function() {
-            emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your EmailJS public key
+            emailjs.init("5B3_reNGG9pmQE5KF");
         })();
     </script>
 </head>
@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <div class="profile-image">
-                        <img src="https://i.imgur.com/KPHkgAE.jpg" alt="Ryan Frank" class="founder-image">
+                        <img src="images/ryan-profile.jpg" alt="Ryan Frank" class="founder-image">
                     </div>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                             </div>
                             <div class="price-row">
                                 <span>Gain/Loss</span>
-                                <span class="gain-loss" id="RKLB-gain" data-entry="8.75">--</span>
+                                <span class="gain-loss" id="RKLB-gain">--</span>
                             </div>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                             </div>
                             <div class="price-row">
                                 <span>Gain/Loss</span>
-                                <span class="gain-loss" id="PLTR-gain" data-entry="31.00">--</span>
+                                <span class="gain-loss" id="PLTR-gain">--</span>
                             </div>
                         </div>
                     </div>
@@ -122,7 +122,7 @@
                             </div>
                             <div class="price-row">
                                 <span>Gain/Loss</span>
-                                <span class="gain-loss" id="HUT-gain" data-entry="19.50">--</span>
+                                <span class="gain-loss" id="HUT-gain">--</span>
                             </div>
                         </div>
                     </div>
@@ -145,7 +145,7 @@
                             </div>
                             <div class="price-row">
                                 <span>Gain/Loss</span>
-                                <span class="gain-loss" id="CVNA-gain" data-entry="113.48">--</span>
+                                <span class="gain-loss" id="CVNA-gain">--</span>
                             </div>
                         </div>
                     </div>
@@ -158,11 +158,11 @@
                 <h2>Get in Touch</h2>
                 <form id="contactForm" onsubmit="return sendEmail(event)">
                     <div class="input-group">
-                        <input type="text" id="name" required autocomplete="off">
+                        <input type="text" id="name" required>
                         <label for="name">Name</label>
                     </div>
                     <div class="input-group">
-                        <input type="email" id="email" required autocomplete="off">
+                        <input type="email" id="email" required>
                         <label for="email">Email</label>
                     </div>
                     <div class="input-group">
@@ -176,7 +176,7 @@
     </main>
 
     <script>
-        const API_KEY = 'ct9nk81r01quh43ogj30ct9nk81r01quh43ogj3g'; // Your Finnhub API key
+        const API_KEY = 'ct9nk81r01quh43ogj30ct9nk81r01quh43ogj3g';
 
         function formatPrice(current, entry) {
             const diff = ((current - entry) / entry * 100).toFixed(2);
@@ -215,28 +215,12 @@
                 { symbol: 'CVNA', entry: 113.48 }
             ];
 
-            // Load all stocks simultaneously
             await Promise.all(stocks.map(stock => updatePrice(stock.symbol, stock.entry)));
         }
 
-        // Initial update as soon as page loads
         updateAllPrices();
-
-        // Update every 10 seconds
         setInterval(updateAllPrices, 10000);
 
-        // Smooth scroll for navigation
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-    </script>
-
-    <script>
         function sendEmail(e) {
             e.preventDefault();
 

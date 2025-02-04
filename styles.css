@@ -945,7 +945,7 @@ footer {
 
 .left-content {
     position: absolute;
-    left: -4rem;  /* Moved further left from -2rem */
+    left: -6rem;  /* Moved further left from -4rem */
     top: 50%;
     transform: translateY(-50%);
 }

@@ -156,6 +156,52 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="stock-card">
+                    <div class="stock-content">
+                        <div class="stock-header">
+                            <h2>AI</h2>
+                            <span class="stock-name">C3.AI</span>
+                        </div>
+                        <div class="stock-price">
+                            <div class="price-row">
+                                <span>Entry</span>
+                                <span class="entry-price">$27.32</span>
+                            </div>
+                            <div class="price-row">
+                                <span>Current</span>
+                                <span class="live-price" id="AI-price">Loading...</span>
+                            </div>
+                            <div class="price-row">
+                                <span>Gain/Loss</span>
+                                <span class="gain-loss" id="AI-gain">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stock-card">
+                    <div class="stock-content">
+                        <div class="stock-header">
+                            <h2>LCID</h2>
+                            <span class="stock-name">Lucid Motors</span>
+                        </div>
+                        <div class="stock-price">
+                            <div class="price-row">
+                                <span>Entry</span>
+                                <span class="entry-price">$2.03</span>
+                            </div>
+                            <div class="price-row">
+                                <span>Current</span>
+                                <span class="live-price" id="LCID-price">Loading...</span>
+                            </div>
+                            <div class="price-row">
+                                <span>Gain/Loss</span>
+                                <span class="gain-loss" id="LCID-gain">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -197,7 +243,9 @@
                 { symbol: 'RKLB', entry: 8.92 },
                 { symbol: 'PLTR', entry: 31.28 },
                 { symbol: 'HUT', entry: 19.61 },
-                { symbol: 'CVNA', entry: 113.48 }
+                { symbol: 'CVNA', entry: 113.48 },
+                { symbol: 'AI', entry: 27.32 },
+                { symbol: 'LCID', entry: 2.03 }
             ];
 
             await Promise.all(stocks.map(stock => updatePrice(stock.symbol, stock.entry)));

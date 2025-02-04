@@ -829,6 +829,7 @@ footer {
 
 .stock-result {
     display: none;
+    margin-top: 2rem;
 }
 
 .stock-result.visible {

@@ -994,3 +994,8 @@ img:hover {
     transform: scale(1.1);
     cursor: pointer;
 }
+
+#picks {
+    margin-top: 4rem;  /* Add space above the picks section */
+    padding-top: 2rem;
+}

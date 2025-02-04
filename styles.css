@@ -151,52 +151,40 @@ h2 {
 .input-group {
     position: relative;
     margin-bottom: 2rem;
+    padding-top: 5px;
 }
 
 .input-group input,
 .input-group textarea {
     width: 100%;
-    padding: 1rem;
-    font-size: 1rem;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     color: #fff;
-    transition: border-color 0.3s ease;
-}
-
-.input-group textarea {
-    min-height: 120px;
-    resize: vertical;
+    font-size: 16px;
+    padding: 15px;
+    outline: none;
 }
 
 .input-group label {
     position: absolute;
-    left: 1rem;
-    top: 1rem;
-    padding: 0 0.25rem;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    left: 15px;
+    top: 15px;
+    color: rgba(255, 255, 255, 0.6);
     pointer-events: none;
+    transform-origin: left top;
+    transition: transform 0.2s ease;
 }
 
-/* Move label up when input is focused or has content */
+/* Move labels higher when active */
 .input-group input:focus + label,
 .input-group textarea:focus + label,
 .input-group input:not(:placeholder-shown) + label,
-.input-group textarea:not(:placeholder-shown) + label {
-    transform: translateY(-1.75rem) translateX(-0.25rem);
-    font-size: 0.85rem;
+.input-group textarea:not(:placeholder-shown) + label,
+.input-group input:valid + label,
+.input-group textarea:valid + label {
+    transform: translateY(-35px) scale(0.8);
     color: #4CAF50;
-    background: transparent;
-}
-
-/* Focus styles */
-.input-group input:focus,
-.input-group textarea:focus {
-    outline: none;
-    border-color: #4CAF50;
 }
 
 /* Submit button */

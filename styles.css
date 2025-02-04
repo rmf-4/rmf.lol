@@ -151,7 +151,7 @@ h2 {
 .input-group {
     position: relative;
     margin-bottom: 2rem;
-    padding-top: 10px;
+    padding-top: 20px;
 }
 
 .input-group input,
@@ -183,7 +183,7 @@ h2 {
 .input-group textarea:not(:placeholder-shown) + label,
 .input-group input:valid + label,
 .input-group textarea:valid + label {
-    transform: translateY(-45px) scale(0.8);
+    transform: translateY(-55px) scale(0.8);
     color: #4CAF50;
 }
 

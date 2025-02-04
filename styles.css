@@ -138,71 +138,93 @@ h2 {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    backdrop-filter: blur(10px);
 }
 
 .contact-container h2 {
-    text-align: center;
+    font-size: 34px;
     margin-bottom: 2rem;
     color: #fff;
-    border-bottom: none;
+    font-weight: 600;
 }
 
 .input-group {
     position: relative;
-    margin-bottom: 2rem;
-    padding-top: 15px;
+    margin-bottom: 24px;
+    padding-top: 16px;
 }
 
 .input-group input,
 .input-group textarea {
     width: 100%;
+    min-height: 44px;
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
     color: #fff;
     font-size: 16px;
-    padding: 15px;
+    padding: 12px 16px;
     outline: none;
+    transition: all 0.2s ease;
+}
+
+.input-group textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.4;
 }
 
 .input-group label {
     position: absolute;
-    left: 15px;
-    top: 15px;
+    left: 16px;
+    top: 28px;
     color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
     pointer-events: none;
-    transform-origin: left top;
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease;
+    letter-spacing: 0.01em;
 }
 
-/* Move labels higher when active */
+/* Label animation */
 .input-group input:focus + label,
 .input-group textarea:focus + label,
 .input-group input:not(:placeholder-shown) + label,
 .input-group textarea:not(:placeholder-shown) + label,
 .input-group input:valid + label,
 .input-group textarea:valid + label {
-    transform: translateY(-25px) scale(0.8);
+    transform: translateY(-24px) scale(0.85);
     color: #4CAF50;
+}
+
+/* Focus states */
+.input-group input:focus,
+.input-group textarea:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.3);
 }
 
 /* Submit button */
 #contactForm button {
     width: 100%;
-    padding: 1rem;
-    font-size: 1rem;
-    color: #fff;
+    min-height: 44px;
+    padding: 12px 24px;
     background: #4CAF50;
+    color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: 8px;
 }
 
 #contactForm button:hover {
     background: #45a049;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+}
+
+#contactForm button:active {
+    transform: translateY(0);
 }
 
 #contactForm button:disabled {

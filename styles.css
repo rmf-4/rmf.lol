@@ -901,7 +901,8 @@ footer {
 
 .performance-stats {
     margin-top: 1rem;
-    text-align: center;
+    text-align: left;
+    padding-left: 2rem;
 }
 
 .performance-stats p {
@@ -913,4 +914,15 @@ footer {
 .performance-stats .positive {
     color: #4CAF50;
     font-weight: bold;
+}
+
+.profile img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.profile img:hover {
+    transform: scale(1.1);
 }

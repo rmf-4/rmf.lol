@@ -684,16 +684,15 @@ footer {
 
 .profile-image {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 1rem;
-}
-
-.founder-image {
     width: 100%;
     max-width: 300px;
+    margin: 0 auto;
+}
+
+.profile-image blockquote {
+    margin: 0;
     border-radius: 20px;
+    overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 

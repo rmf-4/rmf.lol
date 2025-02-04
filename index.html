@@ -89,10 +89,10 @@
                     </div>
                     
                     <div class="chart-controls">
-                        <button class="chart-btn active" onclick="updateChart('1D')">1D</button>
-                        <button class="chart-btn" onclick="updateChart('1W')">1W</button>
-                        <button class="chart-btn" onclick="updateChart('1M')">1M</button>
-                        <button class="chart-btn" onclick="updateChart('1Y')">1Y</button>
+                        <button class="chart-btn active" onclick="updateTimeframe('1D')">1D</button>
+                        <button class="chart-btn" onclick="updateTimeframe('1W')">1W</button>
+                        <button class="chart-btn" onclick="updateTimeframe('1M')">1M</button>
+                        <button class="chart-btn" onclick="updateTimeframe('1Y')">1Y</button>
                     </div>
                     
                     <div class="chart-wrapper">
@@ -314,34 +314,13 @@
                     document.getElementById('stockSymbol').textContent = symbol;
                     document.getElementById('currentPrice').textContent = `$${data.c.toFixed(2)}`;
                     
-                    // Update price changes
-                    const changes = {
-                        '1D': data.dp, // Daily percentage change
-                        '1W': ((data.c - data.pc) / data.pc * 100), // Previous close comparison
-                    };
+                    // Update daily change
+                    const dayChange = data.dp;
+                    document.getElementById('change1D').textContent = `${dayChange >= 0 ? '+' : ''}${dayChange.toFixed(2)}%`;
+                    document.getElementById('change1D').className = dayChange >= 0 ? 'positive' : 'negative';
                     
-                    // Update the display for each timeframe
-                    for (const [period, change] of Object.entries(changes)) {
-                        const element = document.getElementById(`change${period}`);
-                        if (element) {
-                            const formattedChange = change.toFixed(2);
-                            element.textContent = `${formattedChange >= 0 ? '+' : ''}${formattedChange}%`;
-                            element.className = formattedChange >= 0 ? 'positive' : 'negative';
-                        }
-                    }
-                    
-                    // Get candle data for chart
-                    const to = Math.floor(Date.now() / 1000);
-                    const from = to - (7 * 24 * 60 * 60); // 7 days
-                    
-                    const candleResponse = await fetch(
-                        `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=30&from=${from}&to=${to}&token=${API_KEY}`
-                    );
-                    const candleData = await candleResponse.json();
-                    
-                    if (candleData.s === 'ok') {
-                        renderChart(candleData);
-                    }
+                    // Get candle data for different timeframes
+                    await updateTimeframe('1D', symbol);
                 } else {
                     alert('No data found for this symbol');
                 }
@@ -351,6 +330,74 @@
             }
         }
 
+        async function updateTimeframe(timeframe, symbol) {
+            const to = Math.floor(Date.now() / 1000);
+            let from, resolution;
+            
+            switch(timeframe) {
+                case '1D':
+                    from = to - (24 * 60 * 60);
+                    resolution = '5';
+                    break;
+                case '1W':
+                    from = to - (7 * 24 * 60 * 60);
+                    resolution = '60';
+                    break;
+                case '1M':
+                    from = to - (30 * 24 * 60 * 60);
+                    resolution = 'D';
+                    break;
+                case '1Y':
+                    from = to - (365 * 24 * 60 * 60);
+                    resolution = 'W';
+                    break;
+                default:
+                    from = to - (24 * 60 * 60);
+                    resolution = '5';
+            }
+            
+            try {
+                const response = await fetch(
+                    `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${API_KEY}`,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (data.s === 'ok' && data.c && data.c.length > 0) {
+                    // Calculate change for the period
+                    const change = ((data.c[data.c.length - 1] - data.c[0]) / data.c[0] * 100).toFixed(2);
+                    const changeElement = document.getElementById(`change${timeframe}`);
+                    if (changeElement) {
+                        changeElement.textContent = `${change >= 0 ? '+' : ''}${change}%`;
+                        changeElement.className = change >= 0 ? 'positive' : 'negative';
+                    }
+                    
+                    // Update chart
+                    renderChart(data);
+                }
+            } catch (error) {
+                console.error(`Error fetching ${timeframe} data:`, error);
+            }
+        }
+
+        // Add click handlers for timeframe buttons
+        document.querySelectorAll('.chart-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const timeframe = this.textContent;
+                const symbol = document.getElementById('stockSymbol').textContent;
+                updateTimeframe(timeframe, symbol);
+                
+                // Update active button state
+                document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
         function renderChart(data) {
             const ctx = document.getElementById('priceChart');
             
@@ -358,16 +405,10 @@
                 chart.destroy();
             }
             
-            // Convert timestamps to dates
-            const labels = data.t.map(timestamp => {
-                const date = new Date(timestamp * 1000);
-                return date.toLocaleString();
-            });
-            
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: data.t.map(t => new Date(t * 1000).toLocaleString()),
                     datasets: [{
                         label: 'Price',
                         data: data.c,

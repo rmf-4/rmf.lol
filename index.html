@@ -333,14 +333,20 @@
     const API_KEY = 'ct9nk81r01quh43ogj30ct9nk81r01quh43ogj3g';
 
     async function searchStock() {
+        console.log('Search initiated');
         const symbol = document.getElementById('stockSearch').value.toUpperCase();
         const resultDiv = document.getElementById('stockResult');
+        console.log('Searching for symbol:', symbol);
         
         try {
             const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
             const data = await response.json();
+            console.log('API response:', data);
             
             if (data.c) {
+                console.log('Stock data received, updating UI');
+                resultDiv.style.display = 'block';
+                
                 document.getElementById('stockSymbol').textContent = symbol;
                 document.getElementById('currentPrice').textContent = `$${data.c.toFixed(2)}`;
                 
@@ -349,12 +355,18 @@
                 changeElement.textContent = `${dayChange >= 0 ? '+' : ''}${dayChange.toFixed(2)}%`;
                 changeElement.className = dayChange >= 0 ? 'positive' : 'negative';
                 
-                resultDiv.classList.add('visible');
                 updateChart('1D', symbol);
                 fetchTimeChanges(symbol);
+                
+                resultDiv.classList.remove('hidden');
+                resultDiv.classList.add('visible');
+            } else {
+                console.log('No price data received');
+                alert('No data found for this symbol');
             }
         } catch (error) {
             console.error('Error:', error);
+            alert('Error fetching stock data. Please try again.');
         }
     }
 

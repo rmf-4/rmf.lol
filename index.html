@@ -73,8 +73,28 @@
                 
                 <div id="stockResult" class="stock-result hidden">
                     <div class="stock-header-info">
-                        <h3 id="stockName">--</h3>
-                        <span id="stockPrice">--</span>
+                        <div class="stock-title">
+                            <h3 id="stockName">--</h3>
+                            <span id="stockPrice" class="current-price">--</span>
+                        </div>
+                        <div class="price-changes">
+                            <div class="change-item">
+                                <span>1D:</span>
+                                <span id="change1D">--</span>
+                            </div>
+                            <div class="change-item">
+                                <span>1W:</span>
+                                <span id="change1W">--</span>
+                            </div>
+                            <div class="change-item">
+                                <span>1M:</span>
+                                <span id="change1M">--</span>
+                            </div>
+                            <div class="change-item">
+                                <span>1Y:</span>
+                                <span id="change1Y">--</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="timeframe-selector">
@@ -84,18 +104,12 @@
                         <button class="timeframe-btn" onclick="changeTimeframe('1Y')">1Y</button>
                     </div>
                     
-                    <div class="chart-container">
-                        <canvas id="stockChart"></canvas>
-                    </div>
-                    
-                    <div class="indicators">
-                        <div class="macd-info">
-                            <h4>MACD Analysis</h4>
-                            <div id="macdSignal">--</div>
+                    <div class="charts-container">
+                        <div class="price-chart">
+                            <canvas id="stockChart"></canvas>
                         </div>
-                        <div class="trend-info">
-                            <h4>Trend</h4>
-                            <div id="trendSignal">--</div>
+                        <div class="macd-chart">
+                            <canvas id="macdChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -331,29 +345,66 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-    let chart = null;
+    let priceChart = null;
+    let macdChart = null;
 
     async function searchStock() {
         const symbol = document.getElementById('stockSearch').value.toUpperCase();
         const resultDiv = document.getElementById('stockResult');
         
         try {
-            // Fetch basic stock info
+            // Fetch current price and changes
             const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
             const data = await response.json();
             
             if (data.c) {
                 document.getElementById('stockName').textContent = symbol;
                 document.getElementById('stockPrice').textContent = `$${data.c.toFixed(2)}`;
-                resultDiv.classList.add('visible');
                 
-                // Get initial timeframe data
+                // Update price changes
+                updatePriceChange('1D', data.dp);
+                await fetchAndDisplayChanges(symbol);
+                
+                resultDiv.classList.add('visible');
                 changeTimeframe('1D');
             }
         } catch (error) {
             console.error('Error:', error);
             alert('Error fetching stock data');
         }
+    }
+
+    async function fetchAndDisplayChanges(symbol) {
+        const to = Math.floor(Date.now() / 1000);
+        const periods = {
+            '1W': 7 * 24 * 60 * 60,
+            '1M': 30 * 24 * 60 * 60,
+            '1Y': 365 * 24 * 60 * 60
+        };
+        
+        for (const [period, seconds] of Object.entries(periods)) {
+            try {
+                const from = to - seconds;
+                const response = await fetch(
+                    `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${from}&to=${to}&token=${API_KEY}`
+                );
+                const data = await response.json();
+                
+                if (data.s === 'ok') {
+                    const change = ((data.c[data.c.length - 1] - data.c[0]) / data.c[0] * 100).toFixed(2);
+                    updatePriceChange(period, change);
+                }
+            } catch (error) {
+                console.error(`Error fetching ${period} data:`, error);
+            }
+        }
+    }
+
+    function updatePriceChange(period, change) {
+        const element = document.getElementById(`change${period}`);
+        const changeStr = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+        element.textContent = changeStr;
+        element.className = change >= 0 ? 'positive-change' : 'negative-change';
     }
 
     async function changeTimeframe(timeframe) {
@@ -396,22 +447,23 @@
             const data = await response.json();
             
             if (data.s === 'ok') {
-                updateChart(data, timeframe);
-                calculateMACD(data.c);
+                updatePriceChart(data, timeframe);
+                const macdData = calculateMACD(data.c);
+                updateMACDChart(macdData, timeframe);
             }
         } catch (error) {
             console.error('Error:', error);
         }
     }
 
-    function updateChart(data, timeframe) {
+    function updatePriceChart(data, timeframe) {
         const ctx = document.getElementById('stockChart');
         
-        if (chart) {
-            chart.destroy();
+        if (priceChart) {
+            priceChart.destroy();
         }
         
-        chart = new Chart(ctx, {
+        priceChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: data.t.map(timestamp => new Date(timestamp * 1000).toLocaleString()),
@@ -419,7 +471,9 @@
                     label: 'Price',
                     data: data.c,
                     borderColor: '#4CAF50',
-                    tension: 0.1
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: false
                 }]
             },
             options: {
@@ -457,19 +511,86 @@
     function calculateMACD(prices) {
         const ema12 = calculateEMA(prices, 12);
         const ema26 = calculateEMA(prices, 26);
-        const macdLine = ema12[ema12.length - 1] - ema26[ema26.length - 1];
-        const signal = calculateEMA(prices, 9);
+        const macdLine = ema12.map((value, index) => value - ema26[index]);
+        const signalLine = calculateEMA(macdLine, 9);
+        const histogram = macdLine.map((value, index) => value - signalLine[index]);
         
-        const macdSignal = document.getElementById('macdSignal');
-        const trendSignal = document.getElementById('trendSignal');
+        return {
+            macdLine,
+            signalLine,
+            histogram
+        };
+    }
+
+    function updateMACDChart(macdData, timeframe) {
+        const ctx = document.getElementById('macdChart');
         
-        if (macdLine > 0) {
-            macdSignal.innerHTML = '<span style="color: #4CAF50">Bullish MACD</span>';
-            trendSignal.innerHTML = '<span style="color: #4CAF50">Upward Trend</span>';
-        } else {
-            macdSignal.innerHTML = '<span style="color: #FF4444">Bearish MACD</span>';
-            trendSignal.innerHTML = '<span style="color: #FF4444">Downward Trend</span>';
+        if (macdChart) {
+            macdChart.destroy();
         }
+        
+        macdChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array(macdData.histogram.length).fill(''),
+                datasets: [
+                    {
+                        label: 'Histogram',
+                        data: macdData.histogram,
+                        type: 'bar',
+                        backgroundColor: macdData.histogram.map(value => 
+                            value >= 0 ? 'rgba(76, 175, 80, 0.6)' : 'rgba(255, 68, 68, 0.6)'
+                        ),
+                        borderColor: macdData.histogram.map(value => 
+                            value >= 0 ? '#4CAF50' : '#FF4444'
+                        ),
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'MACD',
+                        data: macdData.macdLine,
+                        type: 'line',
+                        borderColor: '#4CAF50',
+                        borderWidth: 2,
+                        fill: false
+                    },
+                    {
+                        label: 'Signal',
+                        data: macdData.signalLine,
+                        type: 'line',
+                        borderColor: '#FF4444',
+                        borderWidth: 2,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#fff'
+                        }
+                    },
+                    x: {
+                        display: false
+                    }
+                }
+            }
+        });
     }
 
     function calculateEMA(prices, period) {

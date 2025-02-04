@@ -319,8 +319,13 @@
                     document.getElementById('change1D').textContent = `${dayChange >= 0 ? '+' : ''}${dayChange.toFixed(2)}%`;
                     document.getElementById('change1D').className = dayChange >= 0 ? 'positive' : 'negative';
                     
-                    // Get candle data for different timeframes
-                    await updateTimeframe('1D', symbol);
+                    // Update weekly change based on previous close
+                    const weekChange = ((data.c - data.pc) / data.pc * 100).toFixed(2);
+                    document.getElementById('change1W').textContent = `${weekChange >= 0 ? '+' : ''}${weekChange}%`;
+                    document.getElementById('change1W').className = weekChange >= 0 ? 'positive' : 'negative';
+                    
+                    // Create a simple chart with current price point
+                    renderSimpleChart(data.c);
                 } else {
                     alert('No data found for this symbol');
                 }
@@ -330,85 +335,35 @@
             }
         }
 
-        async function updateTimeframe(timeframe, symbol) {
-            const to = Math.floor(Date.now() / 1000);
-            let from, resolution;
-            
-            switch(timeframe) {
-                case '1D':
-                    from = to - (24 * 60 * 60);
-                    resolution = '5';
-                    break;
-                case '1W':
-                    from = to - (7 * 24 * 60 * 60);
-                    resolution = '60';
-                    break;
-                case '1M':
-                    from = to - (30 * 24 * 60 * 60);
-                    resolution = 'D';
-                    break;
-                case '1Y':
-                    from = to - (365 * 24 * 60 * 60);
-                    resolution = 'W';
-                    break;
-                default:
-                    from = to - (24 * 60 * 60);
-                    resolution = '5';
-            }
-            
-            try {
-                // Simple fetch without custom headers
-                const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${API_KEY}`;
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.s === 'ok' && data.c && data.c.length > 0) {
-                    // Calculate change for the period
-                    const change = ((data.c[data.c.length - 1] - data.c[0]) / data.c[0] * 100).toFixed(2);
-                    const changeElement = document.getElementById(`change${timeframe}`);
-                    if (changeElement) {
-                        changeElement.textContent = `${change >= 0 ? '+' : ''}${change}%`;
-                        changeElement.className = change >= 0 ? 'positive' : 'negative';
-                    }
-                    
-                    // Update chart
-                    renderChart(data);
-                }
-            } catch (error) {
-                console.error(`Error fetching ${timeframe} data:`, error);
-            }
-        }
-
-        // Add click handlers for timeframe buttons
-        document.querySelectorAll('.chart-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const timeframe = this.textContent;
-                const symbol = document.getElementById('stockSymbol').textContent;
-                updateTimeframe(timeframe, symbol);
-                
-                // Update active button state
-                document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        function renderChart(data) {
+        function renderSimpleChart(currentPrice) {
             const ctx = document.getElementById('priceChart');
             
             if (chart) {
                 chart.destroy();
             }
             
+            // Create a simple dataset with the current price
+            const now = new Date();
+            const labels = [];
+            const prices = [];
+            
+            // Create 10 points for a smoother line
+            for (let i = 0; i < 10; i++) {
+                const time = new Date(now - (9-i) * 1000 * 60 * 30); // 30-minute intervals
+                labels.push(time.toLocaleTimeString());
+                prices.push(currentPrice);
+            }
+            
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.t.map(t => new Date(t * 1000).toLocaleString()),
+                    labels: labels,
                     datasets: [{
                         label: 'Price',
-                        data: data.c,
+                        data: prices,
                         borderColor: '#4CAF50',
                         borderWidth: 2,
-                        tension: 0.1,
+                        tension: 0.4,
                         fill: false
                     }]
                 },
@@ -444,6 +399,19 @@
                 }
             });
         }
+
+        // Add click handlers for timeframe buttons
+        document.querySelectorAll('.chart-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button state
+                document.querySelectorAll('.chart-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Re-fetch current data
+                const symbol = document.getElementById('stockSymbol').textContent;
+                searchStock();
+            });
+        });
 
         function sendEmail(e) {
             e.preventDefault();

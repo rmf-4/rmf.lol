@@ -57,7 +57,6 @@ section {
 
 h1 {
     font-size: 2rem;
-    letter-spacing: 2px;
 }
 
 h2 {
@@ -902,7 +901,7 @@ footer {
 .performance-stats {
     margin-top: 1rem;
     text-align: left;
-    padding-left: 2rem;
+    padding-left: 1rem;
 }
 
 .performance-stats p {
@@ -946,7 +945,7 @@ footer {
 
 .left-content {
     position: absolute;
-    left: 0;
+    left: -2rem;  /* Moved further left from 0 */
     top: 50%;
     transform: translateY(-50%);
 }
@@ -994,17 +993,4 @@ img {
 img:hover {
     transform: scale(1.1);
     cursor: pointer;
-}
-
-/* Move performance text more to the left */
-.left-content {
-    position: absolute;
-    left: 0;  /* Changed from 2rem to 0 */
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.left-content p {
-    margin: 1rem 0;
-    color: white;
 }

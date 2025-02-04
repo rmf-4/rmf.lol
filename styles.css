@@ -898,3 +898,19 @@ footer {
 .negative {
     color: #ff4444;
 }
+
+.performance-stats {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.performance-stats p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.performance-stats .positive {
+    color: #4CAF50;
+    font-weight: bold;
+}

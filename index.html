@@ -247,24 +247,12 @@
 
     <script>
         const API_KEY = 'ct9nk81r01quh43ogj30ct9nk81r01quh43ogj3g';
-
-        // Stock picks data
-        const stocks = [
-            { symbol: 'RKLB', entry: 8.92 },
-            { symbol: 'PLTR', entry: 31.28 },
-            { symbol: 'HUT', entry: 19.61 },
-            { symbol: 'CVNA', entry: 113.48 },
-            { symbol: 'AI', entry: 27.32 },
-            { symbol: 'LCID', entry: 2.03 }
-        ];
-
         let chart = null;
 
-        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize stock picks updates
             updateAllPrices();
-            setInterval(updateAllPrices, 10000); // Update every 10 seconds
+            setInterval(updateAllPrices, 10000);
             
             // Initialize stock screener
             document.getElementById('searchForm').addEventListener('submit', function(e) {
@@ -273,8 +261,16 @@
             });
         });
 
-        // Update function for main stock picks
         async function updateAllPrices() {
+            const stocks = [
+                { symbol: 'RKLB', entry: 8.92 },
+                { symbol: 'PLTR', entry: 31.28 },
+                { symbol: 'HUT', entry: 19.61 },
+                { symbol: 'CVNA', entry: 113.48 },
+                { symbol: 'AI', entry: 27.32 },
+                { symbol: 'LCID', entry: 2.03 }
+            ];
+
             for (const stock of stocks) {
                 try {
                     const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.symbol}&token=${API_KEY}`);
@@ -306,7 +302,7 @@
             const resultDiv = document.getElementById('stockResult');
             
             try {
-                // Get current price from Finnhub
+                // Get current quote
                 const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
                 const data = await response.json();
                 
@@ -314,48 +310,37 @@
                     // Show the result container
                     resultDiv.style.display = 'block';
                     
-                    // Update stock info
+                    // Update current price and symbol
                     document.getElementById('stockSymbol').textContent = symbol;
                     document.getElementById('currentPrice').textContent = `$${data.c.toFixed(2)}`;
                     
-                    // Update daily change
-                    const dayChange = data.dp;
-                    document.getElementById('change1D').textContent = `${dayChange >= 0 ? '+' : ''}${dayChange.toFixed(2)}%`;
-                    document.getElementById('change1D').className = dayChange >= 0 ? 'positive' : 'negative';
+                    // Update price changes
+                    const changes = {
+                        '1D': data.dp, // Daily percentage change
+                        '1W': ((data.c - data.pc) / data.pc * 100), // Previous close comparison
+                    };
                     
-                    // Fetch historical data from Yahoo Finance
-                    const endDate = Math.floor(Date.now() / 1000);
-                    const startDate = endDate - (365 * 24 * 60 * 60); // 1 year ago
-                    
-                    const yahooResponse = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${startDate}&period2=${endDate}&interval=1d`);
-                    const yahooData = await yahooResponse.json();
-                    
-                    if (yahooData.chart.result) {
-                        const prices = yahooData.chart.result[0];
-                        const timestamps = prices.timestamp;
-                        const closePrices = prices.indicators.quote[0].close;
-                        
-                        // Calculate other time period changes
-                        const periods = {
-                            '1W': 7,
-                            '1M': 30,
-                            '1Y': 365
-                        };
-                        
-                        for (const [period, days] of Object.entries(periods)) {
-                            const endIndex = closePrices.length - 1;
-                            const startIndex = Math.max(endIndex - days, 0);
-                            const change = ((closePrices[endIndex] - closePrices[startIndex]) / closePrices[startIndex] * 100).toFixed(2);
-                            
-                            document.getElementById(`change${period}`).textContent = `${change >= 0 ? '+' : ''}${change}%`;
-                            document.getElementById(`change${period}`).className = change >= 0 ? 'positive' : 'negative';
+                    // Update the display for each timeframe
+                    for (const [period, change] of Object.entries(changes)) {
+                        const element = document.getElementById(`change${period}`);
+                        if (element) {
+                            const formattedChange = change.toFixed(2);
+                            element.textContent = `${formattedChange >= 0 ? '+' : ''}${formattedChange}%`;
+                            element.className = formattedChange >= 0 ? 'positive' : 'negative';
                         }
-                        
-                        // Update chart
-                        renderChart({
-                            t: timestamps,
-                            c: closePrices
-                        });
+                    }
+                    
+                    // Get candle data for chart
+                    const to = Math.floor(Date.now() / 1000);
+                    const from = to - (7 * 24 * 60 * 60); // 7 days
+                    
+                    const candleResponse = await fetch(
+                        `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=30&from=${from}&to=${to}&token=${API_KEY}`
+                    );
+                    const candleData = await candleResponse.json();
+                    
+                    if (candleData.s === 'ok') {
+                        renderChart(candleData);
                     }
                 } else {
                     alert('No data found for this symbol');
@@ -373,16 +358,19 @@
                 chart.destroy();
             }
             
-            const validPrices = data.c.filter(price => price !== null);
-            const validTimestamps = data.t.filter((_, i) => data.c[i] !== null);
+            // Convert timestamps to dates
+            const labels = data.t.map(timestamp => {
+                const date = new Date(timestamp * 1000);
+                return date.toLocaleString();
+            });
             
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: validTimestamps.map(t => new Date(t * 1000).toLocaleDateString()),
+                    labels: labels,
                     datasets: [{
                         label: 'Price',
-                        data: validPrices,
+                        data: data.c,
                         borderColor: '#4CAF50',
                         borderWidth: 2,
                         tension: 0.1,

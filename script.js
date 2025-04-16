@@ -1,4 +1,4 @@
-console.log("RYFR Trading initialized");
+console.log("RMF.lol initialized");
 
 document.addEventListener('DOMContentLoaded', () => {
     const NEWS_API_KEY = '7df5dc02304a40bfa1e4961141cc5ae2';

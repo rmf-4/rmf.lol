@@ -3,58 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RMF.lol - Stock Analysis</title>
+    <title>RMF.lol</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <nav>
-        <div class="logo">RMF.lol</div>
-    </nav>
-
-    <main>
-        <section id="search">
-            <div class="search-container">
-                <input type="text" 
-                       id="stockInput" 
-                       placeholder="Enter stock symbol (e.g., AAPL)" 
-                       minlength="1" 
-                       maxlength="5"
-                       aria-label="Stock symbol input">
-                <button id="analyzeBtn" aria-label="Analyze stock">Analyze</button>
-            </div>
-        </section>
-
-        <section id="results" class="hidden">
-            <div class="analysis-grid">
-                <div class="news-card">
-                    <h2>News Sentiment</h2>
-                    <div id="newsContainer" class="news-list"></div>
-                </div>
-                
-                <div class="social-card">
-                    <h2>Social Sentiment</h2>
-                    <div id="redditContainer" class="reddit-list"></div>
-                </div>
-                
-                <div class="sentiment-card">
-                    <h2 id="stockSymbol"></h2>
-                    <div class="sentiment-score">
-                        <div class="score-circle">
-                            <span id="sentimentScore">--</span>
-                        </div>
-                    </div>
-                    <div class="sentiment-details">
-                        <div class="metric">
-                            <span>Overall Sentiment</span>
-                            <div id="overallSentiment" class="bar-graph"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
     <script src="script.js"></script>
 </body>
 </html>

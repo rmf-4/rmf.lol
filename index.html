@@ -3,11 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RYFR Trading</title>
+    <title>RYFR Trading - Stock Sentiment Analysis</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <h1>RYFR Trading</h1>
+    <nav>
+        <div class="logo">RYFR Trading</div>
+        <div class="nav-links">
+            <a href="#sentiment">Sentiment</a>
+            <a href="#about">About</a>
+        </div>
+    </nav>
+
+    <main>
+        <section id="search">
+            <div class="search-container">
+                <input type="text" id="stockInput" placeholder="Enter stock symbol (e.g., AAPL)" minlength="1" maxlength="5">
+                <button id="analyzeBtn">Analyze</button>
+            </div>
+        </section>
+
+        <section id="results" class="hidden">
+            <div class="sentiment-card">
+                <h2 id="stockSymbol"></h2>
+                <div class="sentiment-score">
+                    <div class="score-circle">
+                        <span id="sentimentScore">--</span>
+                    </div>
+                </div>
+                <div class="sentiment-details">
+                    <div class="metric">
+                        <span>News Sentiment</span>
+                        <div id="newsSentiment" class="bar-graph"></div>
+                    </div>
+                    <div class="metric">
+                        <span>Social Sentiment</span>
+                        <div id="socialSentiment" class="bar-graph"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <script src="script.js"></script>
 </body>
 </html>

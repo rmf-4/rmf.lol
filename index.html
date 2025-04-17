@@ -3,10 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RMF.lol</title>
+    <title>PLO Theory Lab</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <nav>
+        <div class="logo">PLO Theory Lab</div>
+        <div class="nav-links">
+            <a href="#preflop">Preflop</a>
+            <a href="#postflop">Postflop</a>
+            <a href="#simulator">Hand Simulator</a>
+            <a href="#study">Study Room</a>
+        </div>
+    </nav>
+
+    <main>
+        <section id="hand-selector">
+            <div class="card-selector">
+                <h2>Select Your Hand</h2>
+                <div class="hand-builder">
+                    <div class="card-input" id="card1"></div>
+                    <div class="card-input" id="card2"></div>
+                    <div class="card-input" id="card3"></div>
+                    <div class="card-input" id="card4"></div>
+                </div>
+                <div class="position-selector">
+                    <button class="position" data-pos="UTG">UTG</button>
+                    <button class="position" data-pos="MP">MP</button>
+                    <button class="position" data-pos="CO">CO</button>
+                    <button class="position" data-pos="BTN">BTN</button>
+                    <button class="position" data-pos="SB">SB</button>
+                    <button class="position" data-pos="BB">BB</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="analysis">
+            <div class="theory-grid">
+                <div class="preflop-analysis">
+                    <h3>Preflop Analysis</h3>
+                    <div class="hand-strength"></div>
+                    <div class="action-recommendations"></div>
+                    <div class="range-charts"></div>
+                </div>
+                
+                <div class="postflop-analysis">
+                    <h3>Postflop Considerations</h3>
+                    <div class="flop-textures"></div>
+                    <div class="equity-distribution"></div>
+                    <div class="action-strategy"></div>
+                </div>
+                
+                <div class="study-tools">
+                    <h3>Study Tools</h3>
+                    <div class="quiz-module"></div>
+                    <div class="hand-history"></div>
+                    <div class="peer-review"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <script src="script.js"></script>
 </body>
 </html>

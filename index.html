@@ -5,7 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLO Theory Lab</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNpeOwyRq7Lpod2C0DIBhLse19W1eisKs",
+            authDomain: "plotheory-b6bd8.firebaseapp.com",
+            projectId: "plotheory-b6bd8",
+            storageBucket: "plotheory-b6bd8.firebasestorage.app",
+            messagingSenderId: "91742326680",
+            appId: "1:91742326680:web:b8cb661d9f5fa98df165ed",
+            measurementId: "G-0T4YRNZZGN"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make Firebase services available globally
+        window.auth = auth;
+        window.db = db;
+    </script>
+    
+    <!-- Your script -->
+    <script src="script.js" type="module"></script>
 </head>
 <body>
     <nav>
@@ -64,7 +94,5 @@
             </div>
         </section>
     </main>
-
-    <script src="script.js"></script>
 </body>
 </html>

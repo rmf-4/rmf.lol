@@ -24,8 +24,13 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        
+        // Make auth and db available globally
         window.auth = getAuth(app);
         window.db = getFirestore(app);
+        
+        // Signal that Firebase is ready
+        window.dispatchEvent(new Event('firebaseLoaded'));
     </script>
     <script src="script.js" defer></script>
 </head>

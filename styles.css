@@ -16,7 +16,7 @@ nav {
     margin: 20px 0;
 }
 
-.nav-link {
+nav a {
     color: #7aa2f7;
     text-decoration: none;
     margin: 0 10px;
@@ -24,13 +24,32 @@ nav {
     border-radius: 5px;
 }
 
-.nav-link:hover {
+nav a:hover {
     background: rgba(122, 162, 247, 0.1);
 }
 
-section {
+.card-selector {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
     margin: 20px 0;
-    padding: 20px;
+}
+
+.card-input {
+    width: 80px;
+    height: 120px;
+    background: #2c2c2c;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: transform 0.2s;
+}
+
+.card-input:hover {
+    transform: translateY(-5px);
 }
 
 .position-buttons {
@@ -58,7 +77,50 @@ section {
     background: #7aa2f7;
 }
 
+.card-selector-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.card-selector-content {
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 5px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.card-option {
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+    background: #3c3c3c;
+    transition: background-color 0.2s;
+}
+
+.card-option:hover {
+    background: #4c4c4c;
+}
+
 h2 {
     color: #7aa2f7;
     margin-bottom: 20px;
+}
+
+section {
+    margin: 20px 0;
+    padding: 20px;
 }

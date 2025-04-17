@@ -6,14 +6,12 @@
     <title>PLO Theory Lab</title>
     <link rel="stylesheet" href="styles.css">
     
-    <!-- Update Firebase SDKs to latest versions -->
+    <!-- Firebase SDKs -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBNpeOwyRq7Lpod2C0DIBhLse19W1eisKs",
             authDomain: "plotheory-b6bd8.firebaseapp.com",
@@ -26,14 +24,10 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Make Firebase services available globally
-        window.firebaseApp = app;
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
     </script>
+    <script src="script.js" defer></script>
 </head>
 <body>
     <h1>PLO Theory Lab</h1>
@@ -77,7 +71,5 @@
         <h2>Study Tools</h2>
         <div id="study-content"></div>
     </section>
-
-    <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -75,6 +75,14 @@ function checkCardsAndUpdateAnalysis() {
         const activePosition = document.querySelector('.position-btn.active');
         if (activePosition) {
             updateAnalysis(activePosition.dataset.position);
+        } else {
+            // If no position is selected, show a message
+            const preflopContent = document.getElementById('preflop-content');
+            preflopContent.innerHTML = `
+                <div class="analysis-result">
+                    <p>Please select a position to analyze your hand.</p>
+                </div>
+            `;
         }
     }
 }
@@ -88,6 +96,8 @@ function updateAnalysis(position) {
         return;
     }
     
+    console.log("Analyzing hand:", cards, "Position:", position);
+    
     // Get card ranks for simple analysis
     const ranks = cards.map(card => card.charAt(0));
     
@@ -100,7 +110,7 @@ function updateAnalysis(position) {
     const pairs = Object.values(rankCounts).filter(count => count >= 2).length;
     
     // Check if hand is suited
-    const suits = cards.map(card => card.charAt(1));
+    const suits = cards.map(card => card.slice(1));
     const suitCounts = {};
     suits.forEach(suit => {
         suitCounts[suit] = (suitCounts[suit] || 0) + 1;
@@ -175,7 +185,7 @@ function updateAnalysis(position) {
 
 function updatePostflopConsiderations(cards, position) {
     const ranks = cards.map(card => card.charAt(0));
-    const suits = cards.map(card => card.charAt(1));
+    const suits = cards.map(card => card.slice(1));
     
     // Check for potential straights
     const rankValues = ranks.map(rank => {

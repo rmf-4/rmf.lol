@@ -5,19 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLO Theory Lab</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Add Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
+    
+    <!-- Update Firebase SDKs to latest versions -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNpeOwyRq7Lpod2C0DIBhLse19W1eisKs",
+            authDomain: "plotheory-b6bd8.firebaseapp.com",
+            projectId: "plotheory-b6bd8",
+            storageBucket: "plotheory-b6bd8.firebasestorage.app",
+            messagingSenderId: "91742326680",
+            appId: "1:91742326680:web:b8cb661d9f5fa98df165ed",
+            measurementId: "G-0T4YRNZZGN"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make Firebase services available globally
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+    </script>
 </head>
 <body>
     <h1>PLO Theory Lab</h1>
     
     <nav>
-        <a href="#preflop" class="nav-link">Preflop</a>
-        <a href="#postflop" class="nav-link">Postflop</a>
-        <a href="#simulator" class="nav-link">Hand Simulator</a>
-        <a href="#study" class="nav-link">Study Room</a>
+        <a href="#preflop">Preflop</a>
+        <a href="#postflop">Postflop</a>
+        <a href="#simulator">Hand Simulator</a>
+        <a href="#study">Study Room</a>
     </nav>
 
     <section id="hand-selector">
@@ -53,6 +78,6 @@
         <div id="study-content"></div>
     </section>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

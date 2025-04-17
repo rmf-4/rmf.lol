@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLO Theory Lab</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Add Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <h1>PLO Theory Lab</h1>
@@ -18,6 +22,12 @@
 
     <section id="hand-selector">
         <h2>Select Your Hand</h2>
+        <div class="card-selector">
+            <div class="card-input" id="card1"></div>
+            <div class="card-input" id="card2"></div>
+            <div class="card-input" id="card3"></div>
+            <div class="card-input" id="card4"></div>
+        </div>
         <div class="position-buttons">
             <button class="position-btn" data-position="UTG">UTG</button>
             <button class="position-btn" data-position="MP">MP</button>
@@ -30,14 +40,17 @@
 
     <section id="preflop-analysis">
         <h2>Preflop Analysis</h2>
+        <div id="preflop-content"></div>
     </section>
 
     <section id="postflop-considerations">
         <h2>Postflop Considerations</h2>
+        <div id="postflop-content"></div>
     </section>
 
     <section id="study-tools">
         <h2>Study Tools</h2>
+        <div id="study-content"></div>
     </section>
 
     <script src="script.js"></script>

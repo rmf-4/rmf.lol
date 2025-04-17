@@ -214,6 +214,23 @@ function initializeApp() {
     // Add event listeners
     document.getElementById('signIn').addEventListener('click', signIn);
     document.getElementById('signUp').addEventListener('click', signUp);
+
+    console.log('DOM loaded');
+    
+    // Get position buttons
+    const positionButtons = document.querySelectorAll('.position-btn');
+    
+    // Add click event listeners to position buttons
+    positionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            positionButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            // Log the selected position
+            console.log('Selected position:', this.dataset.position);
+        });
+    });
 }
 
 async function signIn() {

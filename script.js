@@ -150,78 +150,51 @@ function createMatrixGrid() {
     });
 }
 
-function showCardSelector(cardInput) {
-    const suits = ['♠', '♥', '♣', '♦']; // Ordered: spades, hearts, clubs, diamonds
+function showCardSelector(inputElement) {
+    // Create card selector overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'card-selector-overlay';
+    
     const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+    const suits = ['♠', '♥', '♦', '♣'];
     
-    // Create modal
-    const modal = document.createElement('div');
-    modal.className = 'card-selector-modal';
+    const selectorContent = document.createElement('div');
+    selectorContent.className = 'card-selector-content';
     
-    let html = '<div class="card-selector-content">';
-    
-    // Generate cards organized by suit
-    for (let suit of suits) {
-        for (let rank of ranks) {
-            const isRed = suit === '♥' || suit === '♦';
-            html += `<div class="card-option ${isRed ? 'red-card' : ''}" data-rank="${rank}" data-suit="${suit}">${rank}${suit}</div>`;
-        }
-    }
-    
-    html += '</div>';
-    
-    modal.innerHTML = html;
-    document.body.appendChild(modal);
-    
-    // Add CSS for red cards
-    const style = document.createElement('style');
-    style.textContent = `
-        .card-selector-content {
-            display: grid;
-            grid-template-columns: repeat(13, 1fr);
-            gap: 5px;
-        }
-        .red-card {
-            color: #ff6b6b !important;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Handle card selection
-    const options = modal.querySelectorAll('.card-option');
-    options.forEach(option => {
-        option.addEventListener('click', function() {
-            const rank = this.getAttribute('data-rank');
-            const suit = this.getAttribute('data-suit');
+    ranks.forEach(rank => {
+        suits.forEach(suit => {
+            const cardOption = document.createElement('div');
+            cardOption.className = 'card-option';
+            cardOption.textContent = rank + suit;
             
-            cardInput.textContent = rank + suit;
-            cardInput.style.backgroundColor = (suit === '♥' || suit === '♦') ? '#ff6b6b' : '#4d4d4d';
-            
-            modal.remove();
-            
-            // Check if this is a board card
-            if (cardInput.classList.contains('board-card')) {
-                // If all flop cards are selected, enable analyze button
-                const flopCards = document.querySelectorAll('.board-card');
-                const allFlopSelected = Array.from(flopCards).slice(0, 3).every(card => 
-                    card.textContent !== 'Flop 1' && 
-                    card.textContent !== 'Flop 2' && 
-                    card.textContent !== 'Flop 3'
-                );
-                
-                if (allFlopSelected) {
-                    document.getElementById('analyze-board').disabled = false;
-                }
-            } else {
-                analyzeHand();
+            // Add color for hearts and diamonds
+            if (suit === '♥' || suit === '♦') {
+                cardOption.style.color = '#ff0000';
             }
+            
+            cardOption.addEventListener('click', () => {
+                inputElement.textContent = rank + suit;
+                inputElement.style.backgroundColor = '#333';
+                if (suit === '♥' || suit === '♦') {
+                    inputElement.style.color = '#ff0000';
+                } else {
+                    inputElement.style.color = '#ffffff';
+                }
+                document.body.removeChild(overlay);
+                analyzeHand();
+            });
+            
+            selectorContent.appendChild(cardOption);
         });
     });
     
-    // Close modal when clicking outside
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.remove();
+    overlay.appendChild(selectorContent);
+    document.body.appendChild(overlay);
+    
+    // Close on click outside
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
         }
     });
 }

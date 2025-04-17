@@ -124,3 +124,26 @@ section {
     margin: 20px 0;
     padding: 20px;
 }
+
+.red-card {
+    color: #ff6b6b !important;
+}
+
+.analysis-result, .postflop-advice {
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    max-width: 800px;
+    text-align: left;
+}
+
+.analysis-result h3, .postflop-advice h3 {
+    color: #7aa2f7;
+    margin-bottom: 15px;
+}
+
+.analysis-result p, .postflop-advice p {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}

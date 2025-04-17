@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function showCardSelector(cardInput) {
-        const suits = ['♠', '♥', '♦', '♣'];
+        const suits = ['♠', '♥', '♣', '♦']; // Ordered: spades, hearts, clubs, diamonds
         const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
         
         // Create modal
@@ -33,15 +33,33 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.className = 'card-selector-modal';
         
         let html = '<div class="card-selector-content">';
-        for (let rank of ranks) {
-            for (let suit of suits) {
-                html += `<div class="card-option" data-rank="${rank}" data-suit="${suit}">${rank}${suit}</div>`;
+        
+        // Generate cards organized by suit
+        for (let suit of suits) {
+            for (let rank of ranks) {
+                const isRed = suit === '♥' || suit === '♦';
+                html += `<div class="card-option ${isRed ? 'red-card' : ''}" data-rank="${rank}" data-suit="${suit}">${rank}${suit}</div>`;
             }
         }
+        
         html += '</div>';
         
         modal.innerHTML = html;
         document.body.appendChild(modal);
+        
+        // Add CSS for red cards
+        const style = document.createElement('style');
+        style.textContent = `
+            .card-selector-content {
+                display: grid;
+                grid-template-columns: repeat(13, 1fr);
+                gap: 5px;
+            }
+            .red-card {
+                color: #ff6b6b !important;
+            }
+        `;
+        document.head.appendChild(style);
         
         // Handle card selection
         const options = modal.querySelectorAll('.card-option');

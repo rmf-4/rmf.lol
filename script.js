@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize theme toggle
     initializeThemeToggle();
     
-    // Initialize study tools
-    initializeStudyTools();
+    // Remove or comment out this line if not needed
+    // initializeStudyTools();
 });
 
 function setupTabs() {

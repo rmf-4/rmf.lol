@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function setupTabs() {
     const mainContent = document.querySelector('main');
-    
+
     // Create range visualizer section if it doesn't exist
     if (!document.getElementById('range-section')) {
         const rangeSection = document.createElement('section');
@@ -1018,251 +1018,206 @@ function analyzeBoardWithHand(boardCards, handCards) {
 }
 
 function initializeRangeVisualizer() {
-    const rangeGrid = document.getElementById('range-grid');
-    if (!rangeGrid) return;
+    const mainContent = document.querySelector('main') || document.body;
     
+    // Create range visualizer section
+    const rangeSection = document.createElement('div');
+    rangeSection.id = 'range-visualizer';
+    rangeSection.innerHTML = `
+        <h2>Range Visualizer</h2>
+        <div class="position-buttons">
+            <button class="position-btn" data-position="UTG">UTG</button>
+            <button class="position-btn" data-position="MP">MP</button>
+            <button class="position-btn" data-position="CO">CO</button>
+            <button class="position-btn" data-position="BTN">BTN</button>
+            <button class="position-btn" data-position="SB">SB</button>
+            <button class="position-btn" data-position="BB">BB</button>
+        </div>
+        <div id="range-grid"></div>
+    `;
+    mainContent.appendChild(rangeSection);
+    
+    createRangeGrid();
+    
+    // Add event listeners to position buttons
+    const buttons = document.querySelectorAll('.position-btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            buttons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            updateRangeVisualizer(this.dataset.position);
+        });
+    });
+    
+    // Set BTN as default active position
+    document.querySelector('[data-position="BTN"]').classList.add('active');
+    updateRangeVisualizer('BTN');
+}
+
+function createRangeGrid() {
+    const rangeGrid = document.getElementById('range-grid');
     const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
     
-    // Clear existing grid
-    rangeGrid.innerHTML = '';
+    // Create header row
+    const headerRow = document.createElement('div');
+    headerRow.className = 'range-row';
+    headerRow.innerHTML = '<div class="range-cell header"></div>' + 
+        ranks.map(rank => `<div class="range-cell header">${rank}</div>`).join('');
+    rangeGrid.appendChild(headerRow);
     
-    // Create PLO combination categories
-    const categories = [
-        {
-            title: "Double Suited Aces",
-            hands: [
-                "AAKKds", "AAQQds", "AAJJds", "AATTds", "AA99ds", "AA88ds",
-                "AAKQds", "AAKJds", "AAKTds", "AAQJds", "AAQTds", "AAJTds"
-            ]
-        },
-        {
-            title: "Single Suited Aces",
-            hands: [
-                "AAKKs", "AAQQs", "AAJJs", "AATTs", "AA99s", "AA88s",
-                "AAKQs", "AAKJs", "AAKTs", "AAQJs", "AAQTs", "AAJTs"
-            ]
-        },
-        {
-            title: "Double Suited Kings",
-            hands: [
-                "KKQQds", "KKJJds", "KKTTds", "KK99ds", "KK88ds",
-                "KKQJds", "KKQTds", "KKJTds", "KKT9ds"
-            ]
-        },
-        {
-            title: "Premium Rundowns",
-            hands: [
-                "AKQJds", "KQJTds", "QJT9ds", "JT98ds", "T987ds",
-                "AKQJs", "KQJTs", "QJT9s", "JT98s", "T987s"
-            ]
-        },
-        {
-            title: "Medium Rundowns",
-            hands: [
-                "9876ds", "8765ds", "7654ds", "6543ds", "5432ds",
-                "9876s", "8765s", "7654s", "6543s", "5432s"
-            ]
-        },
-        {
-            title: "Double Paired",
-            hands: [
-                "AAKK", "AAQQ", "AAJJ", "AATT", "AA99", "AA88",
-                "KKQQ", "KKJJ", "KKTT", "KK99", "KK88",
-                "QQJJ", "QQTT", "QQ99", "QQ88",
-                "JJTT", "JJ99", "JJ88",
-                "TT99", "TT88",
-                "9988"
-            ]
-        },
-        {
-            title: "Three to an Ace",
-            hands: [
-                "AKQx", "AKJx", "AKTx", "AQJx", "AQTx", "AJTx",
-                "AK9x", "AQ9x", "AJ9x", "AT9x",
-                "AK8x", "AQ8x", "AJ8x", "AT8x"
-            ]
-        },
-        {
-            title: "Three to a King",
-            hands: [
-                "KQJx", "KQTx", "KJTx", "KT9x",
-                "KQ9x", "KJ9x", "KT9x",
-                "KQ8x", "KJ8x", "KT8x"
-            ]
-        }
-    ];
-    
-    // Create grid with categories
-    categories.forEach(category => {
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'plo-category';
+    // Create grid rows
+    ranks.forEach(rank1 => {
+        const row = document.createElement('div');
+        row.className = 'range-row';
         
-        const title = document.createElement('h3');
-        title.textContent = category.title;
-        categoryDiv.appendChild(title);
+        // Add row header
+        row.innerHTML = `<div class="range-cell header">${rank1}</div>`;
         
-        const handsGrid = document.createElement('div');
-        handsGrid.className = 'hands-grid';
-        
-        category.hands.forEach(hand => {
-            const handDiv = document.createElement('div');
-            handDiv.className = 'hand-cell';
-            handDiv.textContent = hand;
-            handDiv.dataset.hand = hand;
-            handsGrid.appendChild(handDiv);
+        // Add cells
+        ranks.forEach(rank2 => {
+            const cell = document.createElement('div');
+            cell.className = 'range-cell';
+            if (rank1 === rank2) {
+                cell.dataset.hand = `${rank1}${rank1}xx`; // Double paired
+                cell.textContent = `${rank1}${rank1}`;
+            } else {
+                cell.dataset.hand = `${rank1}${rank2}ds`; // Double suited
+                cell.textContent = `${rank1}${rank2}`;
+            }
+            row.appendChild(cell);
         });
         
-        categoryDiv.appendChild(handsGrid);
-        rangeGrid.appendChild(categoryDiv);
+        rangeGrid.appendChild(row);
     });
 }
 
 function updateRangeVisualizer(position) {
-    const handCells = document.querySelectorAll('.hand-cell');
+    const rangeCells = document.querySelectorAll('.range-cell:not(.header)');
     
     // Clear previous classes
-    handCells.forEach(cell => {
+    rangeCells.forEach(cell => {
         cell.classList.remove('raise', 'pot', 'call', 'fold');
     });
     
-    // Define comprehensive PLO ranges for each position
+    // Updated PLO ranges with correct hand rankings
     const ranges = {
         'UTG': {
             'raise': [
-                // Premium double suited aces
-                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds',
-                // Premium rundowns
-                'AKQJds', 'KQJTds',
-                // Top double paired
-                'AAKK', 'AAQQ'
+                'AKds', 'AQds', 'AJds', // Premium double suited
+                'AAKKds', 'AAQQds', 'AAJJds', // Double suited aces
+                'AAKK', 'AAQQ', // Double paired aces
+                'KKQQds' // Premium double suited kings
             ],
             'pot': [
-                // Other double suited aces
-                'AATTds', 'AAJTds', 'AAQJds',
-                // Double suited kings
-                'KKQQds', 'KKJJds',
-                // Strong rundowns
-                'QJT9ds', 'JT98ds',
-                // Strong double paired
-                'KKQQ', 'KKJJ'
+                'KQds', 'KJds', 'QJds', // Strong double suited
+                'AATTds', 'KKJJds', 
+                'KKQQ', 'KKJJ',
+                'JT98ds', 'T987ds' // Premium rundowns
             ],
             'call': [
-                // Single suited aces
-                'AAKKs', 'AAQQs', 'AAJJs',
-                // Medium rundowns
-                '9876ds', '8765ds',
-                // Connected hands
-                'KQJTs', 'QJT9s'
+                'KTds', 'QTds', 'JTds',
+                'AA99ds', 'KK99ds',
+                'QQJJ', 'JJTT',
+                '9876ds', '8765ds' // Connected rundowns
             ]
         },
         'MP': {
             'raise': [
-                // All premium double suited aces
-                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds', 'AAKJds',
-                // Premium rundowns
-                'AKQJds', 'KQJTds', 'QJT9ds',
-                // Top double paired
-                'AAKK', 'AAQQ', 'AAJJ'
+                'AKds', 'AQds', 'AJds', 'KQds',
+                'AAKKds', 'AAQQds', 'AAJJds',
+                'AAKK', 'AAQQ', 'AAJJ',
+                'KKQQds', 'KKJJds'
             ],
             'pot': [
-                // More double suited hands
-                'AATTds', 'AAJTds', 'KKQQds', 'KKJJds',
-                // Strong rundowns
-                'JT98ds', 'T987ds',
-                // Strong double paired
-                'KKQQ', 'KKJJ', 'QQJJ'
+                'KJds', 'QJds', 'JTds',
+                'AATTds', 'AA99ds',
+                'KKQQ', 'KKJJ', 'QQJJ',
+                'JT98ds', 'T987ds', '9876ds'
             ],
             'call': [
-                // Single suited aces and kings
-                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
-                // Medium rundowns
-                '9876ds', '8765ds', '7654ds',
-                // Connected hands
-                'KQJTs', 'QJT9s', 'JT98s'
+                'KTds', 'QTds', 'T9ds',
+                'KK99ds', 'QQ99ds',
+                'JJTT', 'TT99',
+                '8765ds', '7654ds'
             ]
         },
         'CO': {
             'raise': [
-                // All premium hands from above positions
-                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds', 'AAKJds',
-                'AKQJds', 'KQJTds', 'QJT9ds',
+                'AKds', 'AQds', 'AJds', 'KQds', 'KJds',
+                'AAKKds', 'AAQQds', 'AAJJds', 'AATTds',
                 'AAKK', 'AAQQ', 'AAJJ',
-                // Additional premium hands
-                'AATTds', 'KKQQds', 'JT98ds'
+                'KKQQds', 'KKJJds'
             ],
             'pot': [
-                // More double suited and rundown hands
-                'AA99ds', 'AA88ds', 'KKJJds', 'KKTTds',
-                'T987ds', '9876ds',
-                // More double paired
-                'KKQQ', 'KKJJ', 'QQJJ', 'JJTT'
+                'QJds', 'JTds', 'T9ds',
+                'AA99ds', 'KK99ds',
+                'KKQQ', 'KKJJ', 'QQJJ', 'JJTT',
+                'JT98ds', 'T987ds', '9876ds', '8765ds'
             ],
             'call': [
-                // Wider range of suited and connected hands
-                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
-                '8765ds', '7654ds', '6543ds',
-                'KQJTs', 'QJT9s', 'JT98s', 'T987s'
+                '98ds', '87ds', '76ds',
+                'QQ99ds', 'JJ99ds',
+                'TT99', '9988',
+                '7654ds', '6543ds'
             ]
         },
         'BTN': {
             'raise': [
-                // All premium hands
-                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds', 'AAKJds', 'AATTds',
-                'AKQJds', 'KQJTds', 'QJT9ds', 'JT98ds',
-                'AAKK', 'AAQQ', 'AAJJ', 'KKQQ'
+                'AKds', 'AQds', 'AJds', 'KQds', 'KJds', 'QJds',
+                'AAKKds', 'AAQQds', 'AAJJds', 'AATTds',
+                'AAKK', 'AAQQ', 'AAJJ', 'AATT',
+                'KKQQds', 'KKJJds', 'KKTTds'
             ],
             'pot': [
-                // Wide range of strong hands
-                'AA99ds', 'AA88ds', 'KKJJds', 'KKTTds',
-                'T987ds', '9876ds', '8765ds',
-                'KKJJ', 'QQJJ', 'JJTT', 'TT99'
+                'JTds', 'T9ds', '98ds',
+                'AA99ds', 'KK99ds', 'QQ99ds',
+                'KKQQ', 'KKJJ', 'QQJJ', 'JJTT',
+                'JT98ds', 'T987ds', '9876ds', '8765ds'
             ],
             'call': [
-                // Very wide range of playable hands
-                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
-                '7654ds', '6543ds', '5432ds',
-                'KQJTs', 'QJT9s', 'JT98s', 'T987s', '9876s'
+                '87ds', '76ds', '65ds',
+                'JJ99ds', 'TT99ds', '9988ds',
+                'TT99', '9988', '8877',
+                '7654ds', '6543ds', '5432ds'
             ]
         },
         'SB': {
             'raise': [
-                // Premium hands only
-                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds',
-                'AKQJds', 'KQJTds',
+                'AKds', 'AQds', 'AJds',
+                'AAKKds', 'AAQQds',
                 'AAKK', 'AAQQ'
             ],
             'pot': [
-                // Strong hands
-                'AATTds', 'KKQQds', 'QJT9ds',
-                'KKQQ', 'KKJJ', 'QQJJ'
+                'KQds', 'KJds',
+                'AAJJds', 'AATTds',
+                'AAJJ', 'KKQQ',
+                'JT98ds'
             ],
             'call': [
-                // Selective calling range
-                'AAKKs', 'AAQQs', 'AAJJs',
-                'JT98ds', '9876ds',
-                'KQJTs', 'QJT9s'
+                'QJds', 'JTds',
+                'KK99ds', 'QQ99ds',
+                'KKJJ', 'QQJJ',
+                'T987ds', '9876ds'
             ]
         },
         'BB': {
             'raise': [], // BB typically 3-bets or calls
             'pot': [
-                // Strong hands to 3-bet
-                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds',
-                'AKQJds', 'KQJTds',
+                'AKds', 'AQds', 'AJds', 'KQds',
+                'AAKKds', 'AAQQds', 'AAJJds',
                 'AAKK', 'AAQQ', 'AAJJ'
             ],
             'call': [
-                // Wide defending range
-                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
-                'JT98ds', '9876ds', '8765ds', '7654ds',
-                'KQJTs', 'QJT9s', 'JT98s', 'T987s',
-                'KKJJ', 'QQJJ', 'JJTT', 'TT99'
+                'KJds', 'QJds', 'JTds', 'T9ds',
+                'AATTds', 'KKJJds', 'QQJJds',
+                'KKQQ', 'KKJJ', 'QQJJ',
+                'JT98ds', 'T987ds', '9876ds', '8765ds'
             ]
         }
     };
     
     // Apply classes based on position
-    handCells.forEach(cell => {
+    rangeCells.forEach(cell => {
         const hand = cell.dataset.hand;
         if (ranges[position].raise.includes(hand)) {
             cell.classList.add('raise');

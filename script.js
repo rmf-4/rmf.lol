@@ -2,8 +2,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("RMF.lol initialized");
     
-    // Set up tabs
-    setupTabs();
+    // Set up card selection first
+    const cardInputs = document.querySelectorAll('.card-input');
+    cardInputs.forEach(input => {
+        input.textContent = 'Select';
+        input.style.backgroundColor = '#2c2c2c';
+        
+        input.addEventListener('click', function() {
+            showCardSelector(this);
+        });
+    });
     
     // Set up position buttons
     const positionButtons = document.querySelectorAll('.position-btn');
@@ -13,18 +21,36 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             console.log('Position selected:', this.textContent);
             analyzeHand();
-            updateRangeVisualizer(this.textContent);
         });
     });
     
-    // Set up card selection
-    const cardInputs = document.querySelectorAll('.card-input');
-    cardInputs.forEach(input => {
-        input.textContent = 'Select';
-        input.style.backgroundColor = '#2c2c2c';
-        
-        input.addEventListener('click', function() {
-            showCardSelector(this);
+    // Initialize sections
+    const sections = ['preflop', 'postflop', 'hand-simulator', 'study-room'];
+    sections.forEach(section => {
+        const element = document.getElementById(section);
+        if (element) {
+            element.style.display = 'none';
+        }
+    });
+    
+    // Show default section
+    const preflopSection = document.getElementById('preflop');
+    if (preflopSection) {
+        preflopSection.style.display = 'block';
+    }
+    
+    // Set up navigation
+    const navLinks = document.querySelectorAll('nav a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    element.style.display = section === targetId ? 'block' : 'none';
+                }
+            });
         });
     });
     

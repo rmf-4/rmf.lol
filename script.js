@@ -42,23 +42,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupTabs() {
-    // Add tab navigation
-    const nav = document.querySelector('nav');
-    nav.innerHTML = `
-        <a href="#hand-selector" class="tab active" data-tab="hand-selector">Hand Analysis</a>
-        <a href="#range-visualizer" class="tab" data-tab="range-visualizer">Range Visualizer</a>
-        <a href="#board-texture" class="tab" data-tab="board-texture">Board Texture</a>
-        <a href="#study-tools" class="tab" data-tab="study-tools">Study Tools</a>
-    `;
+    const mainContent = document.querySelector('main');
     
-    // Add tab sections if they don't exist
-    const mainContent = document.querySelector('body');
-    
-    if (!document.getElementById('range-visualizer')) {
+    // Create range visualizer section if it doesn't exist
+    if (!document.getElementById('range-section')) {
         const rangeSection = document.createElement('section');
-        rangeSection.id = 'range-visualizer';
-        rangeSection.className = 'tab-content';
-        rangeSection.style.display = 'none';
+        rangeSection.id = 'range-section';
         rangeSection.innerHTML = `
             <h2>Range Visualizer</h2>
             <div class="position-buttons range-positions">
@@ -69,8 +58,8 @@ function setupTabs() {
                 <button class="position-btn" data-position="SB">SB</button>
                 <button class="position-btn" data-position="BB">BB</button>
             </div>
-            <div class="range-grid-container">
-                <div id="range-grid"></div>
+            <div class="range-grid">
+                <div class="matrix-grid"></div>
             </div>
             <div class="range-legend">
                 <div class="legend-item"><span class="legend-color raise"></span> Raise</div>
@@ -80,56 +69,58 @@ function setupTabs() {
             </div>
         `;
         mainContent.appendChild(rangeSection);
-    }
-    
-    if (!document.getElementById('board-texture')) {
-        const boardSection = document.createElement('section');
-        boardSection.id = 'board-texture';
-        boardSection.className = 'tab-content';
-        boardSection.style.display = 'none';
-        boardSection.innerHTML = `
-            <h2>Board Texture Analysis</h2>
-            <div class="board-cards">
-                <div class="card-input board-card" id="flop1">Flop 1</div>
-                <div class="card-input board-card" id="flop2">Flop 2</div>
-                <div class="card-input board-card" id="flop3">Flop 3</div>
-                <div class="card-input board-card" id="turn">Turn</div>
-                <div class="card-input board-card" id="river">River</div>
-            </div>
-            <button id="analyze-board" class="action-button">Analyze Board</button>
-            <div id="board-analysis"></div>
-        `;
-        mainContent.appendChild(boardSection);
-    }
-    
-    // Set up tab switching
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content, section');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            this.classList.add('active');
-            
-            // Hide all tab contents
-            tabContents.forEach(content => {
-                if (content.id) {
-                    content.style.display = 'none';
-                }
+        
+        // Initialize the matrix grid
+        createMatrixGrid();
+        
+        // Add event listeners to position buttons
+        const buttons = document.querySelectorAll('.position-btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                buttons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                updateRangeVisualizer(this.dataset.position);
             });
-            
-            // Show selected tab content
-            const tabId = this.getAttribute('data-tab');
-            const selectedContent = document.getElementById(tabId);
-            if (selectedContent) {
-                selectedContent.style.display = 'block';
-            }
         });
+        
+        // Set BTN as default active position
+        document.querySelector('[data-position="BTN"]').classList.add('active');
+        updateRangeVisualizer('BTN');
+    }
+}
+
+function createMatrixGrid() {
+    const matrixGrid = document.querySelector('.matrix-grid');
+    const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+    
+    // Create header row
+    const headerRow = document.createElement('div');
+    headerRow.className = 'matrix-row header';
+    headerRow.innerHTML = '<div class="matrix-cell"></div>' + 
+        ranks.map(rank => `<div class="matrix-cell">${rank}</div>`).join('');
+    matrixGrid.appendChild(headerRow);
+    
+    // Create matrix rows
+    ranks.forEach(rank1 => {
+        const row = document.createElement('div');
+        row.className = 'matrix-row';
+        
+        // Add row header
+        const rowHeader = document.createElement('div');
+        rowHeader.className = 'matrix-cell header';
+        rowHeader.textContent = rank1;
+        row.appendChild(rowHeader);
+        
+        // Add cells
+        ranks.forEach(rank2 => {
+            const cell = document.createElement('div');
+            cell.className = 'matrix-cell';
+            cell.dataset.hand = `${rank1}${rank2}`;
+            cell.textContent = `${rank1}${rank2}`;
+            row.appendChild(cell);
+        });
+        
+        matrixGrid.appendChild(row);
     });
 }
 
@@ -1032,94 +1023,247 @@ function initializeRangeVisualizer() {
     
     const ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
     
-    // Create grid
-    let gridHTML = '';
-    for (let i = 0; i < ranks.length; i++) {
-        for (let j = 0; j < ranks.length; j++) {
-            const hand = ranks[i] + ranks[j];
-            gridHTML += `<div class="range-cell" data-hand="${hand}">${hand}</div>`;
+    // Clear existing grid
+    rangeGrid.innerHTML = '';
+    
+    // Create PLO combination categories
+    const categories = [
+        {
+            title: "Double Suited Aces",
+            hands: [
+                "AAKKds", "AAQQds", "AAJJds", "AATTds", "AA99ds", "AA88ds",
+                "AAKQds", "AAKJds", "AAKTds", "AAQJds", "AAQTds", "AAJTds"
+            ]
+        },
+        {
+            title: "Single Suited Aces",
+            hands: [
+                "AAKKs", "AAQQs", "AAJJs", "AATTs", "AA99s", "AA88s",
+                "AAKQs", "AAKJs", "AAKTs", "AAQJs", "AAQTs", "AAJTs"
+            ]
+        },
+        {
+            title: "Double Suited Kings",
+            hands: [
+                "KKQQds", "KKJJds", "KKTTds", "KK99ds", "KK88ds",
+                "KKQJds", "KKQTds", "KKJTds", "KKT9ds"
+            ]
+        },
+        {
+            title: "Premium Rundowns",
+            hands: [
+                "AKQJds", "KQJTds", "QJT9ds", "JT98ds", "T987ds",
+                "AKQJs", "KQJTs", "QJT9s", "JT98s", "T987s"
+            ]
+        },
+        {
+            title: "Medium Rundowns",
+            hands: [
+                "9876ds", "8765ds", "7654ds", "6543ds", "5432ds",
+                "9876s", "8765s", "7654s", "6543s", "5432s"
+            ]
+        },
+        {
+            title: "Double Paired",
+            hands: [
+                "AAKK", "AAQQ", "AAJJ", "AATT", "AA99", "AA88",
+                "KKQQ", "KKJJ", "KKTT", "KK99", "KK88",
+                "QQJJ", "QQTT", "QQ99", "QQ88",
+                "JJTT", "JJ99", "JJ88",
+                "TT99", "TT88",
+                "9988"
+            ]
+        },
+        {
+            title: "Three to an Ace",
+            hands: [
+                "AKQx", "AKJx", "AKTx", "AQJx", "AQTx", "AJTx",
+                "AK9x", "AQ9x", "AJ9x", "AT9x",
+                "AK8x", "AQ8x", "AJ8x", "AT8x"
+            ]
+        },
+        {
+            title: "Three to a King",
+            hands: [
+                "KQJx", "KQTx", "KJTx", "KT9x",
+                "KQ9x", "KJ9x", "KT9x",
+                "KQ8x", "KJ8x", "KT8x"
+            ]
         }
-    }
+    ];
     
-    rangeGrid.innerHTML = gridHTML;
-    
-    // Set up position buttons in range visualizer
-    const rangePositionButtons = document.querySelectorAll('.range-positions .position-btn');
-    rangePositionButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            rangePositionButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            updateRangeVisualizer(this.dataset.position);
+    // Create grid with categories
+    categories.forEach(category => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'plo-category';
+        
+        const title = document.createElement('h3');
+        title.textContent = category.title;
+        categoryDiv.appendChild(title);
+        
+        const handsGrid = document.createElement('div');
+        handsGrid.className = 'hands-grid';
+        
+        category.hands.forEach(hand => {
+            const handDiv = document.createElement('div');
+            handDiv.className = 'hand-cell';
+            handDiv.textContent = hand;
+            handDiv.dataset.hand = hand;
+            handsGrid.appendChild(handDiv);
         });
+        
+        categoryDiv.appendChild(handsGrid);
+        rangeGrid.appendChild(categoryDiv);
     });
-    
-    // Default to UTG range
-    updateRangeVisualizer('UTG');
 }
 
 function updateRangeVisualizer(position) {
-    const rangeCells = document.querySelectorAll('.range-cell');
+    const handCells = document.querySelectorAll('.hand-cell');
     
     // Clear previous classes
-    rangeCells.forEach(cell => {
-        cell.className = 'range-cell';
+    handCells.forEach(cell => {
+        cell.classList.remove('raise', 'pot', 'call', 'fold');
     });
     
-    // Define hand ranges for each position
+    // Define comprehensive PLO ranges for each position
     const ranges = {
         'UTG': {
-            'raise': ['AA', 'KK', 'QQ', 'JJ', 'TT', 'AK'],
-            'pot': ['99', '88', 'AQ', 'AJ', 'KQ'],
-            'call': ['77', '66', 'AT', 'KJ', 'QJ'],
-            'fold': []  // Everything else is fold
+            'raise': [
+                // Premium double suited aces
+                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds',
+                // Premium rundowns
+                'AKQJds', 'KQJTds',
+                // Top double paired
+                'AAKK', 'AAQQ'
+            ],
+            'pot': [
+                // Other double suited aces
+                'AATTds', 'AAJTds', 'AAQJds',
+                // Double suited kings
+                'KKQQds', 'KKJJds',
+                // Strong rundowns
+                'QJT9ds', 'JT98ds',
+                // Strong double paired
+                'KKQQ', 'KKJJ'
+            ],
+            'call': [
+                // Single suited aces
+                'AAKKs', 'AAQQs', 'AAJJs',
+                // Medium rundowns
+                '9876ds', '8765ds',
+                // Connected hands
+                'KQJTs', 'QJT9s'
+            ]
         },
         'MP': {
-            'raise': ['AA', 'KK', 'QQ', 'JJ', 'TT', '99', 'AK', 'AQ'],
-            'pot': ['88', '77', 'AJ', 'AT', 'KQ', 'KJ'],
-            'call': ['66', '55', 'A9', 'KT', 'QJ', 'QT', 'JT'],
-            'fold': []
+            'raise': [
+                // All premium double suited aces
+                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds', 'AAKJds',
+                // Premium rundowns
+                'AKQJds', 'KQJTds', 'QJT9ds',
+                // Top double paired
+                'AAKK', 'AAQQ', 'AAJJ'
+            ],
+            'pot': [
+                // More double suited hands
+                'AATTds', 'AAJTds', 'KKQQds', 'KKJJds',
+                // Strong rundowns
+                'JT98ds', 'T987ds',
+                // Strong double paired
+                'KKQQ', 'KKJJ', 'QQJJ'
+            ],
+            'call': [
+                // Single suited aces and kings
+                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
+                // Medium rundowns
+                '9876ds', '8765ds', '7654ds',
+                // Connected hands
+                'KQJTs', 'QJT9s', 'JT98s'
+            ]
         },
         'CO': {
-            'raise': ['AA', 'KK', 'QQ', 'JJ', 'TT', '99', '88', 'AK', 'AQ', 'AJ'],
-            'pot': ['77', '66', '55', 'AT', 'A9', 'KQ', 'KJ', 'KT', 'QJ'],
-            'call': ['44', '33', '22', 'A8', 'A7', 'K9', 'QT', 'Q9', 'JT', 'J9', 'T9'],
-            'fold': []
+            'raise': [
+                // All premium hands from above positions
+                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds', 'AAKJds',
+                'AKQJds', 'KQJTds', 'QJT9ds',
+                'AAKK', 'AAQQ', 'AAJJ',
+                // Additional premium hands
+                'AATTds', 'KKQQds', 'JT98ds'
+            ],
+            'pot': [
+                // More double suited and rundown hands
+                'AA99ds', 'AA88ds', 'KKJJds', 'KKTTds',
+                'T987ds', '9876ds',
+                // More double paired
+                'KKQQ', 'KKJJ', 'QQJJ', 'JJTT'
+            ],
+            'call': [
+                // Wider range of suited and connected hands
+                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
+                '8765ds', '7654ds', '6543ds',
+                'KQJTs', 'QJT9s', 'JT98s', 'T987s'
+            ]
         },
         'BTN': {
-            'raise': ['AA', 'KK', 'QQ', 'JJ', 'TT', '99', '88', '77', 'AK', 'AQ', 'AJ', 'AT', 'KQ', 'KJ'],
-            'pot': ['66', '55', '44', 'A9', 'A8', 'A7', 'KT', 'K9', 'QJ', 'QT', 'Q9', 'JT'],
-            'call': ['33', '22', 'A6', 'A5', 'A4', 'A3', 'A2', 'K8', 'K7', 'K6', 'Q8', 'J9', 'J8', 'T9', 'T8', '98'],
-            'fold': []
+            'raise': [
+                // All premium hands
+                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds', 'AAKJds', 'AATTds',
+                'AKQJds', 'KQJTds', 'QJT9ds', 'JT98ds',
+                'AAKK', 'AAQQ', 'AAJJ', 'KKQQ'
+            ],
+            'pot': [
+                // Wide range of strong hands
+                'AA99ds', 'AA88ds', 'KKJJds', 'KKTTds',
+                'T987ds', '9876ds', '8765ds',
+                'KKJJ', 'QQJJ', 'JJTT', 'TT99'
+            ],
+            'call': [
+                // Very wide range of playable hands
+                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
+                '7654ds', '6543ds', '5432ds',
+                'KQJTs', 'QJT9s', 'JT98s', 'T987s', '9876s'
+            ]
         },
         'SB': {
-            'raise': ['AA', 'KK', 'QQ', 'JJ', 'TT', '99', '88', 'AK', 'AQ', 'AJ'],
-            'pot': ['77', '66', '55', 'AT', 'A9', 'KQ', 'KJ', 'KT', 'QJ', 'QT'],
-            'call': ['44', '33', '22', 'A8', 'A7', 'A6', 'K9', 'K8', 'Q9', 'Q8', 'JT', 'J9', 'T9', '98'],
-            'fold': []
+            'raise': [
+                // Premium hands only
+                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds',
+                'AKQJds', 'KQJTds',
+                'AAKK', 'AAQQ'
+            ],
+            'pot': [
+                // Strong hands
+                'AATTds', 'KKQQds', 'QJT9ds',
+                'KKQQ', 'KKJJ', 'QQJJ'
+            ],
+            'call': [
+                // Selective calling range
+                'AAKKs', 'AAQQs', 'AAJJs',
+                'JT98ds', '9876ds',
+                'KQJTs', 'QJT9s'
+            ]
         },
         'BB': {
-            'raise': [],  // BB typically calls or raises as a 3-bet
-            'pot': ['AA', 'KK', 'QQ', 'JJ', 'TT', 'AK', 'AQ'],
-            'call': ['99', '88', '77', '66', '55', '44', '33', '22', 'AJ', 'AT', 'A9', 'A8', 'A7', 'A6', 'A5', 'A4', 'A3', 'A2',
-                    'KQ', 'KJ', 'KT', 'K9', 'K8', 'K7', 'K6', 'K5', 'K4', 'K3', 'K2',
-                    'QJ', 'QT', 'Q9', 'Q8', 'Q7', 'Q6', 'Q5', 'Q4', 'Q3', 'Q2',
-                    'JT', 'J9', 'J8', 'J7', 'J6', 'J5', 'J4', 'J3', 'J2',
-                    'T9', 'T8', 'T7', 'T6', 'T5', 'T4', 'T3', 'T2',
-                    '98', '97', '96', '95', '94', '93', '92',
-                    '87', '86', '85', '84', '83', '82',
-                    '76', '75', '74', '73', '72',
-                    '65', '64', '63', '62',
-                    '54', '53', '52',
-                    '43', '42',
-                    '32'],
-            'fold': []
+            'raise': [], // BB typically 3-bets or calls
+            'pot': [
+                // Strong hands to 3-bet
+                'AAKKds', 'AAQQds', 'AAJJds', 'AAKQds',
+                'AKQJds', 'KQJTds',
+                'AAKK', 'AAQQ', 'AAJJ'
+            ],
+            'call': [
+                // Wide defending range
+                'AAKKs', 'AAQQs', 'AAJJs', 'KKQQs',
+                'JT98ds', '9876ds', '8765ds', '7654ds',
+                'KQJTs', 'QJT9s', 'JT98s', 'T987s',
+                'KKJJ', 'QQJJ', 'JJTT', 'TT99'
+            ]
         }
     };
     
     // Apply classes based on position
-    rangeCells.forEach(cell => {
+    handCells.forEach(cell => {
         const hand = cell.dataset.hand;
-        
         if (ranges[position].raise.includes(hand)) {
             cell.classList.add('raise');
         } else if (ranges[position].pot.includes(hand)) {

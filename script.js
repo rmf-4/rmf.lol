@@ -215,65 +215,302 @@ function analyzeHand() {
     
     // Check if all cards are selected
     if (cards.includes('Select')) {
+        document.getElementById('preflop-content').innerHTML = `
+            <div class="analysis-result">
+                <h3>Hand Analysis</h3>
+                <p>Please select all four cards to analyze your hand.</p>
+            </div>
+        `;
         return;
     }
     
     const activePosition = document.querySelector('.position-btn.active');
     if (!activePosition) {
+        document.getElementById('preflop-content').innerHTML = `
+            <div class="analysis-result">
+                <h3>Hand Analysis: ${cards.join(' ')}</h3>
+                <p>Please select a position to get a complete analysis.</p>
+            </div>
+        `;
         return;
     }
     
     const position = activePosition.textContent;
     
-    // Simple hand analysis
-    let handStrength = 0;
-    let explanation = '';
-    
-    // Count high cards
-    const highCards = cards.filter(card => ['A', 'K', 'Q', 'J'].includes(card[0])).length;
-    handStrength += highCards * 10;
-    
-    // Check for pairs
+    // Extract ranks and suits
     const ranks = cards.map(card => card[0]);
+    const suits = cards.map(card => card.slice(1));
+    
+    // Count rank frequencies
     const rankCounts = {};
     ranks.forEach(rank => {
         rankCounts[rank] = (rankCounts[rank] || 0) + 1;
     });
     
-    const pairs = Object.values(rankCounts).filter(count => count >= 2).length;
-    handStrength += pairs * 15;
-    
-    // Check for suited cards
-    const suits = cards.map(card => card.slice(1));
+    // Count suit frequencies
     const suitCounts = {};
     suits.forEach(suit => {
         suitCounts[suit] = (suitCounts[suit] || 0) + 1;
     });
     
-    const maxSuited = Math.max(...Object.values(suitCounts));
-    if (maxSuited >= 3) {
-        handStrength += 15;
+    // Calculate hand strength based on PLO principles
+    let handStrength = 0;
+    let strengthFactors = [];
+    let weaknesses = [];
+    
+    // Convert ranks to numerical values for easier comparison
+    const rankValues = ranks.map(rank => {
+        if (rank === 'A') return 14;
+        if (rank === 'K') return 13;
+        if (rank === 'Q') return 12;
+        if (rank === 'J') return 11;
+        if (rank === 'T') return 10;
+        return parseInt(rank);
+    });
+    
+    // Sort rank values in descending order
+    const sortedRanks = [...rankValues].sort((a, b) => b - a);
+    
+    // 1. Evaluate high cards (but not as important as in Hold'em)
+    const highCards = rankValues.filter(rank => rank >= 10).length;
+    if (highCards >= 3) {
+        handStrength += 5;
+        strengthFactors.push(`${highCards} high cards (T or higher)`);
     }
     
-    // Position adjustment
-    if (position === 'UTG') handStrength -= 10;
-    if (position === 'MP') handStrength -= 5;
-    if (position === 'BTN') handStrength += 10;
+    // 2. Check for double pairs (good in PLO)
+    const pairs = Object.values(rankCounts).filter(count => count === 2).length;
+    if (pairs === 2) {
+        // Double pairs are good, especially high ones
+        const pairRanks = Object.entries(rankCounts)
+            .filter(([_, count]) => count === 2)
+            .map(([rank, _]) => rank);
+        
+        const highPairs = pairRanks.filter(rank => 
+            rank === 'A' || rank === 'K' || rank === 'Q' || rank === 'J' || rank === 'T'
+        ).length;
+        
+        if (highPairs === 2) {
+            handStrength += 18;
+            strengthFactors.push(`High double pair (${pairRanks.join(', ')})`);
+        } else if (highPairs === 1) {
+            handStrength += 14;
+            strengthFactors.push(`Double pair with one high pair (${pairRanks.join(', ')})`);
+        } else {
+            handStrength += 10;
+            strengthFactors.push(`Double pair (${pairRanks.join(', ')})`);
+        }
+    } else if (pairs === 1) {
+        // Single pair is okay but not great
+        const pairRank = Object.entries(rankCounts)
+            .find(([_, count]) => count === 2)[0];
+        
+        if (pairRank === 'A') {
+            handStrength += 8;
+            strengthFactors.push('Pair of Aces');
+        } else if (pairRank === 'K' || pairRank === 'Q') {
+            handStrength += 6;
+            strengthFactors.push(`Pair of ${pairRank === 'K' ? 'Kings' : 'Queens'}`);
+        } else {
+            handStrength += 4;
+            strengthFactors.push(`Pair of ${pairRank}s`);
+        }
+    }
     
-    // Determine action
+    // 3. Check for trips or quads (generally bad in PLO)
+    const hasTrips = Object.values(rankCounts).some(count => count === 3);
+    const hasQuads = Object.values(rankCounts).some(count => count === 4);
+    
+    if (hasQuads) {
+        handStrength -= 20;
+        weaknesses.push('Four of a kind in starting hand severely reduces drawing potential');
+    } else if (hasTrips) {
+        handStrength -= 10;
+        weaknesses.push('Three of a kind in starting hand reduces drawing potential');
+    }
+    
+    // 4. Check for suited cards (good in PLO)
+    const suitedCounts = Object.values(suitCounts).filter(count => count >= 2);
+    if (suitedCounts.length === 2 && suitedCounts.every(count => count === 2)) {
+        // Double suited (two pairs of suited cards)
+        handStrength += 20;
+        const suitedPairs = Object.entries(suitCounts)
+            .filter(([_, count]) => count === 2)
+            .map(([suit, _]) => suit);
+        strengthFactors.push(`Double suited (${suitedPairs.join(' and ')})`);
+    } else if (suitedCounts.includes(3)) {
+        handStrength += 12;
+        const dominantSuit = Object.entries(suitCounts).find(([_, count]) => count === 3)[0];
+        strengthFactors.push(`Three cards of the same suit (${dominantSuit})`);
+    } else if (suitedCounts.includes(2)) {
+        handStrength += 8;
+        const dominantSuit = Object.entries(suitCounts).find(([_, count]) => count === 2)[0];
+        strengthFactors.push(`Two cards of the same suit (${dominantSuit})`);
+    } else {
+        weaknesses.push('No suited cards (reduces flush potential)');
+    }
+    
+    // 5. Check for connectedness (good in PLO)
+    let gapSizes = [];
+    for (let i = 0; i < sortedRanks.length - 1; i++) {
+        gapSizes.push(sortedRanks[i] - sortedRanks[i + 1]);
+    }
+    
+    const connectedCount = gapSizes.filter(gap => gap === 1).length;
+    const oneGapCount = gapSizes.filter(gap => gap === 2).length;
+    const twoGapCount = gapSizes.filter(gap => gap === 3).length;
+    
+    if (connectedCount >= 3) {
+        handStrength += 20;
+        strengthFactors.push('Highly connected hand (three or more connected cards)');
+    } else if (connectedCount === 2) {
+        handStrength += 15;
+        strengthFactors.push('Well connected hand (two connected cards)');
+    } else if (connectedCount === 1) {
+        handStrength += 8;
+        strengthFactors.push('Partially connected hand');
+    } else if (oneGapCount >= 2) {
+        handStrength += 6;
+        strengthFactors.push('Contains multiple one-gap connections');
+    } else if (oneGapCount === 1) {
+        handStrength += 4;
+        strengthFactors.push('Contains a one-gap connection');
+    } else if (twoGapCount >= 1) {
+        handStrength += 2;
+        strengthFactors.push('Contains a two-gap connection');
+    } else {
+        weaknesses.push('Disconnected hand (reduces straight potential)');
+    }
+    
+    // 6. Check for rundowns (very good in PLO)
+    if (connectedCount >= 3 && Math.max(...sortedRanks) - Math.min(...sortedRanks) <= 4) {
+        handStrength += 15;
+        strengthFactors.push('Rundown hand (four cards within a 5-card range)');
+    }
+    
+    // 7. Check for nut potential
+    if (ranks.includes('A')) {
+        const aceSuits = [];
+        for (let i = 0; i < ranks.length; i++) {
+            if (ranks[i] === 'A') {
+                aceSuits.push(suits[i]);
+            }
+        }
+        
+        if (aceSuits.length >= 2) {
+            handStrength += 8;
+            strengthFactors.push(`Contains multiple aces (${aceSuits.join(', ')})`);
+        } else {
+            handStrength += 5;
+            strengthFactors.push(`Contains an ace (${aceSuits[0]})`);
+        }
+    }
+    
+    // 8. Check for wheel potential (A-5 straight)
+    const hasAce = ranks.includes('A');
+    const hasFive = ranks.includes('5') || ranks.includes('5');
+    const hasFour = ranks.includes('4') || ranks.includes('4');
+    const hasThree = ranks.includes('3') || ranks.includes('3');
+    const hasTwo = ranks.includes('2') || ranks.includes('2');
+    
+    if (hasAce && hasFive && hasFour && (hasThree || hasTwo)) {
+        handStrength += 12;
+        strengthFactors.push('Strong wheel potential (A-5 straight draw)');
+    } else if (hasAce && hasFive && (hasFour || hasThree || hasTwo)) {
+        handStrength += 6;
+        strengthFactors.push('Partial wheel potential');
+    }
+    
+    // 9. Check for broadway potential (T-A straight)
+    const hasTen = ranks.includes('T');
+    const hasJack = ranks.includes('J');
+    const hasQueen = ranks.includes('Q');
+    const hasKing = ranks.includes('K');
+    
+    if (hasAce && hasKing && hasQueen && (hasJack || hasTen)) {
+        handStrength += 12;
+        strengthFactors.push('Strong broadway potential (T-A straight draw)');
+    } else if (hasAce && hasKing && (hasQueen || hasJack || hasTen)) {
+        handStrength += 6;
+        strengthFactors.push('Partial broadway potential');
+    }
+    
+    // 10. Check for danglers (bad in PLO)
+    let hasDangler = false;
+    for (let i = 0; i < 4; i++) {
+        let worksWith = 0;
+        for (let j = 0; j < 4; j++) {
+            if (i === j) continue;
+            
+            // Check if cards work together (same suit or connected or one-gap)
+            if (suits[i] === suits[j] || Math.abs(rankValues[i] - rankValues[j]) <= 3) {
+                worksWith++;
+            }
+        }
+        
+        if (worksWith === 0) {
+            hasDangler = true;
+            weaknesses.push(`${ranks[i]}${suits[i]} is a dangler (doesn't work well with other cards)`);
+            handStrength -= 12;
+            break;
+        }
+    }
+    
+    // 11. Position adjustment
+    let positionAdjustment = 0;
+    let positionAdvice = '';
+    
+    switch (position) {
+        case 'UTG':
+            positionAdjustment = -12;
+            positionAdvice = 'Play very tight from UTG. Only continue with premium hands.';
+            break;
+        case 'MP':
+            positionAdjustment = -6;
+            positionAdvice = 'Play tight from middle position. You can open with strong hands.';
+            break;
+        case 'CO':
+            positionAdjustment = 6;
+            positionAdvice = 'Cutoff allows you to play more hands as you have position on most players.';
+            break;
+        case 'BTN':
+            positionAdjustment = 12;
+            positionAdvice = 'Button is the best position. You can play more speculative hands.';
+            break;
+        case 'SB':
+            positionAdjustment = -10;
+            positionAdvice = 'Small blind is a tough position. Play tight unless the pot is unraised.';
+            break;
+        case 'BB':
+            positionAdjustment = -4;
+            positionAdvice = 'In the big blind, you can defend more widely against late position raises.';
+            break;
+    }
+    
+    handStrength += positionAdjustment;
+    
+    // Normalize hand strength to 0-100 range
+    handStrength = Math.max(0, Math.min(100, handStrength));
+    
+    // Calculate approximate equity against random hands
+    let equity = Math.min(Math.max(handStrength * 0.8, 40), 80).toFixed(1);
+    
+    // Determine action based on hand strength and position
     let action = '';
-    if (handStrength >= 60) {
+    let explanation = '';
+    
+    if (handStrength >= 65) {
         action = 'Raise';
-        explanation = 'This is a premium hand that plays well from any position.';
-    } else if (handStrength >= 45) {
+        explanation = 'This is a premium PLO hand with multiple ways to make strong hands.';
+    } else if (handStrength >= 50) {
         action = 'Pot';
         explanation = 'This is a strong hand worth potting, especially if there are limpers.';
     } else if (handStrength >= 35) {
         action = 'Call';
-        explanation = 'This hand has potential but be cautious.';
+        explanation = 'This hand has potential but be cautious against raises.';
     } else {
         action = 'Fold';
-        explanation = 'This hand is too weak to play profitably.';
+        explanation = 'This hand lacks the connectivity and coordination needed for PLO.';
     }
     
     // Adjust action based on position
@@ -293,65 +530,48 @@ function analyzeHand() {
         <div class="analysis-result">
             <h3>Hand Analysis: ${cards.join(' ')}</h3>
             <p>Position: ${position}</p>
-            <p>Hand Strength: ${handStrength}/100</p>
-            <p>Recommended Action: <span class="${actionClass}">${action}</span></p>
-            <p>${explanation}</p>
+            <div class="strength-meter">
+                <div class="meter-label">Hand Strength</div>
+                <div class="meter">
+                    <div class="meter-fill" style="width: ${handStrength}%"></div>
+                    <span>${handStrength.toFixed(0)}/100</span>
+                </div>
+            </div>
             <div class="equity-estimate">
                 <h4>Estimated Equity vs Random Hand</h4>
                 <div class="equity-bar">
-                    <div class="equity-fill" style="width: ${Math.min(Math.max(handStrength * 0.8, 40), 80)}%"></div>
-                    <span>${Math.min(Math.max(handStrength * 0.8, 40), 80).toFixed(1)}%</span>
+                    <div class="equity-fill" style="width: ${equity}%"></div>
+                    <span>${equity}%</span>
                 </div>
+            </div>
+            <p>Recommended Action: <span class="${actionClass}">${action}</span></p>
+            <p>${explanation}</p>
+            
+            <div class="strength-factors">
+                <h4>Strength Factors:</h4>
+                <ul>
+                    ${strengthFactors.map(factor => `<li>${factor}</li>`).join('')}
+                </ul>
+            </div>
+            
+            ${weaknesses.length > 0 ? `
+                <div class="weaknesses">
+                    <h4>Weaknesses:</h4>
+                    <ul>
+                        ${weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            
+            <div class="position-advice">
+                <h4>Position Advice:</h4>
+                <p>${positionAdvice}</p>
             </div>
         </div>
     `;
     
-    // Display postflop considerations
-    let postflopAdvice = '';
-    
-    if (maxSuited >= 3) {
-        postflopAdvice += '<p><strong>Flush Potential:</strong> You have 3+ cards of the same suit. Look for flush draws.</p>';
-    }
-    
-    if (ranks.includes('A')) {
-        postflopAdvice += '<p><strong>Top Pair Potential:</strong> With an ace in your hand, you have good top pair potential.</p>';
-    }
-    
-    // Check for double pairs
-    if (pairs >= 2) {
-        postflopAdvice += '<p><strong>Set Potential:</strong> With multiple pairs, you have good set potential.</p>';
-    }
-    
-    // Check for connected cards
-    const rankValues = ranks.map(rank => {
-        if (rank === 'A') return 14;
-        if (rank === 'K') return 13;
-        if (rank === 'Q') return 12;
-        if (rank === 'J') return 11;
-        if (rank === 'T') return 10;
-        return parseInt(rank);
-    });
-    
-    const sortedRanks = [...rankValues].sort((a, b) => a - b);
-    const hasConnected = sortedRanks.some((val, i) => i > 0 && val - sortedRanks[i-1] === 1);
-    
-    if (hasConnected) {
-        postflopAdvice += '<p><strong>Straight Potential:</strong> You have connected cards which gives you straight possibilities.</p>';
-    }
-    
-    document.getElementById('postflop-content').innerHTML = `
-        <div class="postflop-advice">
-            <h3>Postflop Considerations</h3>
-            ${postflopAdvice || '<p>No specific postflop advantages detected.</p>'}
-            <p>Remember that board texture is crucial in PLO. Your hand strength can change dramatically based on the community cards.</p>
-            <button id="save-hand" class="action-button">Save Hand</button>
-        </div>
-    `;
-    
-    // Add event listener to save hand button
-    document.getElementById('save-hand').addEventListener('click', function() {
-        saveHandToHistory(cards, position, action, handStrength);
-    });
+    // Update postflop considerations
+    updatePostflopConsiderations(cards, position);
 }
 
 function initializeBoardTexture() {
@@ -378,42 +598,209 @@ function analyzeBoardTexture() {
         document.getElementById('flop3').textContent
     ];
     
-    const turnCard = document.getElementById('turn').textContent;
-    const riverCard = document.getElementById('river').textContent;
+    // Check if flop is complete
+    if (flopCards.includes('Flop 1') || flopCards.includes('Flop 2') || flopCards.includes('Flop 3')) {
+        document.getElementById('board-analysis').innerHTML = `
+            <div class="analysis-result">
+                <h3>Board Analysis</h3>
+                <p>Please select all three flop cards to analyze the board texture.</p>
+            </div>
+        `;
+        return;
+    }
     
-    let boardCards = [...flopCards];
-    if (turnCard !== 'Turn') boardCards.push(turnCard);
-    if (riverCard !== 'River') boardCards.push(riverCard);
+    const turnCard = document.getElementById('turn').textContent !== 'Turn' ? 
+                     document.getElementById('turn').textContent : null;
     
-    // Get hand cards
+    const riverCard = document.getElementById('river').textContent !== 'River' ? 
+                      document.getElementById('river').textContent : null;
+    
+    // Collect all selected board cards
+    const boardCards = [...flopCards];
+    if (turnCard) boardCards.push(turnCard);
+    if (riverCard) boardCards.push(riverCard);
+    
+    // Get the player's hand
     const handCards = Array.from(document.querySelectorAll('.card-input:not(.board-card)'))
-        .map(input => input.textContent)
-        .filter(card => card !== 'Select');
+                          .map(input => input.textContent);
     
-    // Analyze board texture
+    // Check if hand is complete
+    if (handCards.some(card => card === 'Select')) {
+        document.getElementById('board-analysis').innerHTML = `
+            <div class="analysis-result">
+                <h3>Board Analysis: ${boardCards.join(' ')}</h3>
+                <p>Please select your four hole cards to get a complete analysis with your hand.</p>
+                <div id="board-texture-analysis"></div>
+            </div>
+        `;
+        analyzeBoardTextureOnly(boardCards);
+        return;
+    }
+    
+    // Analyze board texture with hand
+    analyzeBoardWithHand(boardCards, handCards);
+}
+
+function analyzeBoardTextureOnly(boardCards) {
+    // Extract ranks and suits from board
     const boardRanks = boardCards.map(card => card[0]);
     const boardSuits = boardCards.map(card => card.slice(1));
     
-    // Check for paired board
-    const boardRankCounts = {};
+    // Check for pairs on board
+    const rankCounts = {};
     boardRanks.forEach(rank => {
-        boardRankCounts[rank] = (boardRankCounts[rank] || 0) + 1;
+        rankCounts[rank] = (rankCounts[rank] || 0) + 1;
     });
     
-    const pairedBoard = Object.values(boardRankCounts).some(count => count >= 2);
-    const tripBoard = Object.values(boardRankCounts).some(count => count >= 3);
+    const pairs = Object.values(rankCounts).filter(count => count >= 2).length;
+    const hasTrips = Object.values(rankCounts).some(count => count >= 3);
+    const hasQuads = Object.values(rankCounts).some(count => count >= 4);
     
     // Check for flush possibilities
-    const boardSuitCounts = {};
+    const suitCounts = {};
     boardSuits.forEach(suit => {
-        boardSuitCounts[suit] = (boardSuitCounts[suit] || 0) + 1;
+        suitCounts[suit] = (suitCounts[suit] || 0) + 1;
     });
     
-    const flushPossible = Object.values(boardSuitCounts).some(count => count >= 3);
-    const flushDraw = Object.values(boardSuitCounts).some(count => count === 3);
-    const flushComplete = Object.values(boardSuitCounts).some(count => count >= 4);
+    const flushDraw = Object.values(suitCounts).some(count => count >= 3);
+    const flushComplete = Object.values(suitCounts).some(count => count >= 5);
+    const flushDrawSuit = flushDraw ? 
+                          Object.entries(suitCounts).find(([_, count]) => count >= 3)[0] : null;
     
     // Check for straight possibilities
+    const rankValues = boardRanks.map(rank => {
+        if (rank === 'A') return 14;
+        if (rank === 'K') return 13;
+        if (rank === 'Q') return 12;
+        if (rank === 'J') return 11;
+        if (rank === 'T') return 10;
+        return parseInt(rank);
+    });
+    
+    const sortedRanks = [...rankValues].sort((a, b) => a - b);
+    let straightDraw = false;
+    let straightComplete = false;
+    
+    // Check for 3-card straight on board
+    for (let i = 0; i < sortedRanks.length - 2; i++) {
+        if (sortedRanks[i+1] === sortedRanks[i] + 1 && sortedRanks[i+2] === sortedRanks[i] + 2) {
+            straightDraw = true;
+            break;
+        }
+    }
+    
+    // Check for 4-card straight on board
+    for (let i = 0; i < sortedRanks.length - 3; i++) {
+        if (sortedRanks[i+1] === sortedRanks[i] + 1 && 
+            sortedRanks[i+2] === sortedRanks[i] + 2 && 
+            sortedRanks[i+3] === sortedRanks[i] + 3) {
+            straightDraw = true;
+            break;
+        }
+    }
+    
+    // Check for 5-card straight on board
+    for (let i = 0; i < sortedRanks.length - 4; i++) {
+        if (sortedRanks[i+1] === sortedRanks[i] + 1 && 
+            sortedRanks[i+2] === sortedRanks[i] + 2 && 
+            sortedRanks[i+3] === sortedRanks[i] + 3 &&
+            sortedRanks[i+4] === sortedRanks[i] + 4) {
+            straightComplete = true;
+            break;
+        }
+    }
+    
+    // Analyze board texture
+    let textureDescription = '';
+    let strategyAdvice = '';
+    
+    // Wetness score (0-5)
+    let wetness = 0;
+    if (flushDraw) wetness += 2;
+    if (flushComplete) wetness += 3;
+    if (straightDraw) wetness += 2;
+    if (straightComplete) wetness += 3;
+    if (pairs > 0) wetness += 1;
+    
+    if (wetness >= 4) {
+        textureDescription += '<p><strong>Wet Board:</strong> Many drawing possibilities exist.</p>';
+        strategyAdvice += '<p>On wet boards, be cautious with one-pair hands. Strong draws have significant equity.</p>';
+    } else if (wetness <= 1) {
+        textureDescription += '<p><strong>Dry Board:</strong> Few drawing possibilities exist.</p>';
+        strategyAdvice += '<p>On dry boards, strong made hands have more value. Bluffs are less likely to succeed.</p>';
+    } else {
+        textureDescription += '<p><strong>Medium Texture:</strong> Some drawing possibilities exist.</p>';
+        strategyAdvice += '<p>On medium-textured boards, consider both made hands and draws.</p>';
+    }
+    
+    // Paired board
+    if (hasQuads) {
+        textureDescription += '<p><strong>Four of a Kind on Board:</strong> The board has quads.</p>';
+        strategyAdvice += '<p>With quads on board, the best hand is a full house using your hole cards.</p>';
+    } else if (hasTrips) {
+        textureDescription += '<p><strong>Three of a Kind on Board:</strong> The board has trips.</p>';
+        strategyAdvice += '<p>With trips on board, full houses are possible. Single pairs lose value.</p>';
+    } else if (pairs > 0) {
+        textureDescription += `<p><strong>Paired Board:</strong> The board has ${pairs} pair(s).</p>`;
+        strategyAdvice += '<p>On paired boards, full houses are possible. Single pairs lose value.</p>';
+    }
+    
+    // Flush possibilities
+    if (flushComplete) {
+        textureDescription += `<p><strong>Flush Complete:</strong> A flush is possible with the ${flushDrawSuit} suit.</p>`;
+        strategyAdvice += '<p>When a flush is possible, be cautious with non-flush hands.</p>';
+    } else if (flushDraw) {
+        textureDescription += `<p><strong>Flush Draw:</strong> Three ${flushDrawSuit} cards on the board.</p>`;
+        strategyAdvice += `<p>With three ${flushDrawSuit} cards on board, any player with two ${flushDrawSuit} cards has a flush draw.</p>`;
+    }
+    
+    // Straight possibilities
+    if (straightComplete) {
+        textureDescription += '<p><strong>Straight Complete:</strong> A straight is possible using all board cards.</p>';
+        strategyAdvice += '<p>When a straight is possible on the board, be cautious with lower straights or non-straight hands.</p>';
+    } else if (straightDraw) {
+        textureDescription += '<p><strong>Straight Draw:</strong> The board has connected cards.</p>';
+        strategyAdvice += '<p>With connected cards on board, straight draws are common.</p>';
+    }
+    
+    // High card analysis
+    const highCards = rankValues.filter(rank => rank >= 10).length;
+    if (highCards >= 2) {
+        textureDescription += '<p><strong>High Card Board:</strong> Multiple high cards (T or higher) are present.</p>';
+        strategyAdvice += '<p>On high card boards, top pair needs a strong kicker. Many players will have connected with this board.</p>';
+    } else if (highCards === 0) {
+        textureDescription += '<p><strong>Low Card Board:</strong> No high cards (T or higher) are present.</p>';
+        strategyAdvice += '<p>On low card boards, overpairs have significant value. Watch for straights with connected low cards.</p>';
+    }
+    
+    // Display the analysis
+    document.getElementById('board-analysis').innerHTML = `
+        <div class="analysis-result">
+            <h3>Board Analysis: ${boardCards.join(' ')}</h3>
+            <div class="texture-description">
+                <h4>Board Texture</h4>
+                ${textureDescription}
+            </div>
+            <div class="strategy-advice">
+                <h4>General Strategy Considerations</h4>
+                ${strategyAdvice}
+                <p>Remember that in PLO, players have four cards, making draws more common than in Hold'em.</p>
+            </div>
+        </div>
+    `;
+}
+
+function analyzeBoardWithHand(boardCards, handCards) {
+    // First analyze the board texture
+    analyzeBoardTextureOnly(boardCards);
+    
+    // Now analyze how the hand interacts with the board
+    const boardRanks = boardCards.map(card => card[0]);
+    const boardSuits = boardCards.map(card => card.slice(1));
+    const handRanks = handCards.map(card => card[0]);
+    const handSuits = handCards.map(card => card.slice(1));
+    
+    // Convert ranks to numerical values
     const boardRankValues = boardRanks.map(rank => {
         if (rank === 'A') return 14;
         if (rank === 'K') return 13;
@@ -423,123 +810,220 @@ function analyzeBoardTexture() {
         return parseInt(rank);
     });
     
-    const sortedBoardRanks = [...boardRankValues].sort((a, b) => a - b);
-    const straightPossible = sortedBoardRanks[sortedBoardRanks.length - 1] - sortedBoardRanks[0] <= 4 || 
-                            (sortedBoardRanks.includes(14) && sortedBoardRanks.includes(2)); // A-5 straight
+    const handRankValues = handRanks.map(rank => {
+        if (rank === 'A') return 14;
+        if (rank === 'K') return 13;
+        if (rank === 'Q') return 12;
+        if (rank === 'J') return 11;
+        if (rank === 'T') return 10;
+        return parseInt(rank);
+    });
     
-    // Generate board analysis
-    let boardAnalysis = `<div class="board-analysis-result">`;
-    boardAnalysis += `<h3>Board: ${boardCards.join(' ')}</h3>`;
+    // Analyze hand interaction with board
+    let handAnalysis = '';
+    let handStrength = 0;
+    let handEquity = 0;
     
-    // Board texture description
-    boardAnalysis += `<h4>Board Texture</h4><ul>`;
-    
-    if (tripBoard) {
-        boardAnalysis += `<li>The board is paired with trips.</li>`;
-    } else if (pairedBoard) {
-        boardAnalysis += `<li>The board is paired.</li>`;
-    } else {
-        boardAnalysis += `<li>The board is unpaired.</li>`;
+    // Check for pairs with board
+    let pairCount = 0;
+    let pairRanks = [];
+    for (let i = 0; i < handRanks.length; i++) {
+        if (boardRanks.includes(handRanks[i])) {
+            pairCount++;
+            pairRanks.push(handRanks[i]);
+        }
     }
     
-    if (flushComplete) {
-        const flushSuit = Object.entries(boardSuitCounts).find(([suit, count]) => count >= 4)[0];
-        boardAnalysis += `<li>There is a flush possible with ${flushSuit}.</li>`;
-    } else if (flushDraw) {
-        const flushSuit = Object.entries(boardSuitCounts).find(([suit, count]) => count === 3)[0];
-        boardAnalysis += `<li>There is a flush draw with ${flushSuit}.</li>`;
+    if (pairCount > 0) {
+        handAnalysis += `<p><strong>Pairs with Board:</strong> You have ${pairCount} card(s) that pair with the board (${pairRanks.join(', ')}).</p>`;
+        handStrength += pairCount * 10;
+        handEquity += pairCount * 5;
+    }
+    
+    // Check for two pair or better
+    const allRanks = [...handRanks, ...boardRanks];
+    const rankCounts = {};
+    allRanks.forEach(rank => {
+        rankCounts[rank] = (rankCounts[rank] || 0) + 1;
+    });
+    
+    const twoPairs = Object.entries(rankCounts)
+        .filter(([_, count]) => count >= 2)
+        .map(([rank, _]) => rank);
+    
+    if (twoPairs.length >= 2) {
+        handAnalysis += `<p><strong>Two Pair or Better:</strong> You have ${twoPairs.length} pairs (${twoPairs.join(', ')}).</p>`;
+        handStrength += 20;
+        handEquity += 15;
+    }
+    
+    // Check for trips or full house
+    const trips = Object.entries(rankCounts)
+        .filter(([_, count]) => count >= 3)
+        .map(([rank, _]) => rank);
+    
+    if (trips.length > 0) {
+        if (twoPairs.length >= 2) {
+            handAnalysis += `<p><strong>Full House:</strong> You have trips (${trips.join(', ')}) and a pair.</p>`;
+            handStrength += 60;
+            handEquity += 40;
+        } else {
+            handAnalysis += `<p><strong>Three of a Kind:</strong> You have trips (${trips.join(', ')}).</p>`;
+            handStrength += 40;
+            handEquity += 25;
+        }
+    }
+    
+    // Check for flush draws and made flushes
+    let flushDraws = [];
+    for (let suit of ['♠', '♥', '♣', '♦']) {
+        const boardSuitCount = boardSuits.filter(s => s === suit).length;
+        const handSuitCount = handSuits.filter(s => s === suit).length;
+        
+        if (boardSuitCount + handSuitCount >= 5) {
+            flushDraws.push({
+                suit: suit,
+                boardCount: boardSuitCount,
+                handCount: handSuitCount,
+                total: boardSuitCount + handSuitCount,
+                isNut: handSuits.includes(suit) && handRanks[handSuits.indexOf(suit)] === 'A'
+            });
+        } else if (boardSuitCount >= 3 && handSuitCount >= 1) {
+            flushDraws.push({
+                suit: suit,
+                boardCount: boardSuitCount,
+                handCount: handSuitCount,
+                total: boardSuitCount + handSuitCount,
+                isNut: handSuits.includes(suit) && handRanks[handSuits.indexOf(suit)] === 'A',
+                isDraw: true
+            });
+        }
+    }
+    
+    if (flushDraws.length > 0) {
+        for (let draw of flushDraws) {
+            if (draw.total >= 5) {
+                const nutText = draw.isNut ? ' (nut flush)' : '';
+                handAnalysis += `<p><strong>Flush Made:</strong> You have a ${draw.suit} flush with ${draw.handCount} cards from your hand${nutText}.</p>`;
+                handStrength += draw.isNut ? 70 : 50;
+                handEquity += draw.isNut ? 45 : 35;
+            } else if (draw.isDraw) {
+                const nutText = draw.isNut ? ' (nut flush draw)' : '';
+                handAnalysis += `<p><strong>Flush Draw:</strong> You have ${draw.handCount} ${draw.suit} card(s) with ${draw.boardCount} on the board${nutText}.</p>`;
+                handStrength += draw.isNut ? 25 : 15;
+                handEquity += draw.isNut ? 20 : 15;
+            }
+        }
+    }
+    
+    // Check for straight possibilities
+    const allRankValues = [...handRankValues, ...boardRankValues];
+    // Handle Ace as both high and low
+    if (allRankValues.includes(14)) {
+        allRankValues.push(1);
+    }
+    
+    const uniqueRanks = [...new Set(allRankValues)].sort((a, b) => a - b);
+    
+    // Find the longest straight
+    let maxStraightLength = 1;
+    let currentLength = 1;
+    
+    for (let i = 1; i < uniqueRanks.length; i++) {
+        if (uniqueRanks[i] === uniqueRanks[i-1] + 1) {
+            currentLength++;
+            maxStraightLength = Math.max(maxStraightLength, currentLength);
+        } else if (uniqueRanks[i] > uniqueRanks[i-1] + 1) {
+            currentLength = 1;
+        }
+    }
+    
+    // Check if we can make a straight using exactly 2 cards from hand
+    let straightPossible = false;
+    let straightRanks = [];
+    
+    // This is a simplified check - a full implementation would be more complex
+    if (maxStraightLength >= 5) {
+        // Find a 5-card sequence
+        for (let i = 0; i <= uniqueRanks.length - 5; i++) {
+            if (uniqueRanks[i+4] === uniqueRanks[i] + 4) {
+                const straightCards = uniqueRanks.slice(i, i+5);
+                // Count how many cards from hand are in this straight
+                const handCardsInStraight = straightCards.filter(rank => 
+                    handRankValues.includes(rank)
+                ).length;
+                
+                if (handCardsInStraight >= 2) {
+                    straightPossible = true;
+                    straightRanks = straightCards.map(rank => {
+                        if (rank === 14 || rank === 1) return 'A';
+                        if (rank === 13) return 'K';
+                        if (rank === 12) return 'Q';
+                        if (rank === 11) return 'J';
+                        if (rank === 10) return 'T';
+                        return rank.toString();
+                    });
+                    break;
+                }
+            }
+        }
     }
     
     if (straightPossible) {
-        boardAnalysis += `<li>There are straight possibilities on this board.</li>`;
+        handAnalysis += `<p><strong>Straight Made:</strong> You have a straight (${straightRanks.join('-')}).</p>`;
+        handStrength += 45;
+        handEquity += 30;
+    } else if (maxStraightLength === 4) {
+        handAnalysis += `<p><strong>Open-Ended Straight Draw:</strong> You need one more card for a straight.</p>`;
+        handStrength += 20;
+        handEquity += 15;
     }
     
-    // Board wetness
-    let wetness = 0;
-    if (pairedBoard) wetness += 1;
-    if (flushPossible) wetness += 2;
-    if (straightPossible) wetness += 2;
-    
-    let wetnessDescription = '';
-    if (wetness >= 4) wetnessDescription = 'very wet';
-    else if (wetness >= 2) wetnessDescription = 'moderately wet';
-    else wetnessDescription = 'dry';
-    
-    boardAnalysis += `<li>Overall, this is a <strong>${wetnessDescription}</strong> board.</li>`;
-    boardAnalysis += `</ul>`;
-    
-    // Hand interaction with board
-    if (handCards.length === 4) {
-        boardAnalysis += `<h4>Your Hand on This Board</h4>`;
-        
-        const allCards = [...handCards, ...boardCards];
-        const allRanks = allCards.map(card => card[0]);
-        const allSuits = allCards.map(card => card.slice(1));
-        
-        // Check for made hands
-        const allRankCounts = {};
-        allRanks.forEach(rank => {
-            allRankCounts[rank] = (allRankCounts[rank] || 0) + 1;
-        });
-        
-        const hasPair = Object.values(allRankCounts).some(count => count >= 2);
-        const hasTrips = Object.values(allRankCounts).some(count => count >= 3);
-        const hasQuads = Object.values(allRankCounts).some(count => count >= 4);
-        
-        const allSuitCounts = {};
-        allSuits.forEach(suit => {
-            allSuitCounts[suit] = (allSuitCounts[suit] || 0) + 1;
-        });
-        
-        const hasFlush = Object.values(allSuitCounts).some(count => count >= 5);
-        const hasFlushDraw = Object.values(allSuitCounts).some(count => count === 4);
-        
-        boardAnalysis += `<ul>`;
-        
-        if (hasQuads) {
-            boardAnalysis += `<li>You have four of a kind!</li>`;
-        } else if (hasTrips) {
-            boardAnalysis += `<li>You have three of a kind.</li>`;
-        } else if (hasPair) {
-            boardAnalysis += `<li>You have a pair.</li>`;
-        }
-        
-        if (hasFlush) {
-            boardAnalysis += `<li>You have a flush!</li>`;
-        } else if (hasFlushDraw) {
-            boardAnalysis += `<li>You have a flush draw.</li>`;
-        }
-        
-        boardAnalysis += `</ul>`;
-        
-        // Strategy advice
-        boardAnalysis += `<h4>Strategy Advice</h4><ul>`;
-        
-        if (wetnessDescription === 'very wet') {
-            boardAnalysis += `<li>On this wet board, be cautious with marginal hands as many draws are possible.</li>`;
-            if (hasTrips || hasFlush) {
-                boardAnalysis += `<li>With your strong made hand, bet for value but be aware of possible better hands.</li>`;
-            } else if (hasPair) {
-                boardAnalysis += `<li>A single pair is vulnerable on this board. Consider checking or betting small.</li>`;
-            }
-        } else if (wetnessDescription === 'moderately wet') {
-            boardAnalysis += `<li>This board has some draw possibilities but isn't extremely dangerous.</li>`;
-            if (hasTrips || hasFlush) {
-                boardAnalysis += `<li>With your strong hand, bet for value.</li>`;
-            }
-        } else {
-            boardAnalysis += `<li>This dry board favors the player with the strongest made hand.</li>`;
-            if (hasPair) {
-                boardAnalysis += `<li>Even a pair has good value on this dry board.</li>`;
-            }
-        }
-        
-        boardAnalysis += `</ul>`;
+    // Overall hand strength assessment
+    let strengthAssessment = '';
+    if (handStrength >= 70) {
+        strengthAssessment = 'Very Strong';
+    } else if (handStrength >= 40) {
+        strengthAssessment = 'Strong';
+    } else if (handStrength >= 20) {
+        strengthAssessment = 'Moderate';
+    } else {
+        strengthAssessment = 'Weak';
     }
     
-    boardAnalysis += `</div>`;
+    // Calculate approximate equity
+    handEquity = Math.min(Math.max(handEquity, 20), 90);
     
-    document.getElementById('board-analysis').innerHTML = boardAnalysis;
+    // Generate strategy advice based on hand strength
+    let strategyAdvice = '';
+    if (handStrength >= 70) {
+        strategyAdvice = 'You have a very strong hand. Consider betting for value and building the pot.';
+    } else if (handStrength >= 40) {
+        strategyAdvice = 'You have a strong hand. Consider betting for value but be cautious of draws.';
+    } else if (handStrength >= 20) {
+        strategyAdvice = 'You have a moderate hand. Consider checking or making a small bet to control the pot size.';
+    } else {
+        strategyAdvice = 'You have a weak hand. Consider checking and folding to significant pressure.';
+    }
+    
+    // Display the hand analysis
+    document.getElementById('board-analysis').innerHTML += `
+        <div class="hand-board-analysis">
+            <h4>Your Hand on This Board</h4>
+            <p><strong>Hand Strength:</strong> ${strengthAssessment}</p>
+            <div class="equity-estimate">
+                <h4>Estimated Equity</h4>
+                <div class="equity-bar">
+                    <div class="equity-fill" style="width: ${handEquity}%"></div>
+                    <span>${handEquity}%</span>
+                </div>
+            </div>
+            ${handAnalysis}
+            <p><strong>Strategy Advice:</strong></p>
+            <p>${strategyAdvice}</p>
+            <p><em>Remember in PLO you must use exactly 2 cards from your hand and 3 from the board.</em></p>
+        </div>
+    `;
 }
 
 function initializeRangeVisualizer() {

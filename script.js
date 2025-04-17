@@ -25,19 +25,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize sections
-    const sections = ['preflop', 'postflop', 'hand-simulator', 'study-room'];
-    sections.forEach(section => {
-        const element = document.getElementById(section);
+    const sections = {
+        'preflop': true,  // Default visible
+        'postflop': false,
+        'hand-simulator': false,
+        'study-room': false
+    };
+    
+    // Set initial visibility
+    Object.entries(sections).forEach(([id, isVisible]) => {
+        const element = document.getElementById(id);
         if (element) {
-            element.style.display = 'none';
+            element.style.display = isVisible ? 'block' : 'none';
         }
     });
-    
-    // Show default section
-    const preflopSection = document.getElementById('preflop');
-    if (preflopSection) {
-        preflopSection.style.display = 'block';
-    }
     
     // Set up navigation
     const navLinks = document.querySelectorAll('nav a');
@@ -45,26 +46,31 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('href').substring(1);
-            sections.forEach(section => {
-                const element = document.getElementById(section);
+            
+            // Update visibility
+            Object.keys(sections).forEach(id => {
+                const element = document.getElementById(id);
                 if (element) {
-                    element.style.display = section === targetId ? 'block' : 'none';
+                    element.style.display = id === targetId ? 'block' : 'none';
                 }
             });
         });
     });
     
     // Initialize board texture section
-    initializeBoardTexture();
+    if (typeof initializeBoardTexture === 'function') {
+        initializeBoardTexture();
+    }
     
     // Initialize range visualizer
-    initializeRangeVisualizer();
+    if (typeof initializeRangeVisualizer === 'function') {
+        initializeRangeVisualizer();
+    }
     
     // Initialize theme toggle
-    initializeThemeToggle();
-    
-    // Remove or comment out this line if not needed
-    // initializeStudyTools();
+    if (typeof initializeThemeToggle === 'function') {
+        initializeThemeToggle();
+    }
 });
 
 function setupTabs() {

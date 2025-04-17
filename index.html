@@ -5,14 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLO Theory Lab</title>
     <link rel="stylesheet" href="styles.css">
-    
+</head>
+<body>
+    <header>
+        <h1>PLO Theory Lab</h1>
+        <nav>
+            <a href="#preflop" class="nav-link">Preflop</a>
+            <a href="#postflop" class="nav-link">Postflop</a>
+            <a href="#simulator" class="nav-link">Hand Simulator</a>
+            <a href="#study" class="nav-link">Study Room</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hand-selector">
+            <h2>Select Your Hand</h2>
+            <div class="card-selector">
+                <div class="card-input" id="card1"></div>
+                <div class="card-input" id="card2"></div>
+                <div class="card-input" id="card3"></div>
+                <div class="card-input" id="card4"></div>
+            </div>
+            
+            <div class="position-buttons">
+                <button class="position-btn" data-position="UTG">UTG</button>
+                <button class="position-btn" data-position="MP">MP</button>
+                <button class="position-btn" data-position="CO">CO</button>
+                <button class="position-btn" data-position="BTN">BTN</button>
+                <button class="position-btn" data-position="SB">SB</button>
+                <button class="position-btn" data-position="BB">BB</button>
+            </div>
+        </section>
+
+        <section id="preflop-analysis">
+            <h2>Preflop Analysis</h2>
+            <div class="analysis-content"></div>
+        </section>
+
+        <section id="postflop-considerations">
+            <h2>Postflop Considerations</h2>
+            <div class="considerations-content"></div>
+        </section>
+
+        <section id="study-tools">
+            <h2>Study Tools</h2>
+            <div class="tools-content"></div>
+        </section>
+    </main>
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
-
+        
         const firebaseConfig = {
             apiKey: "AIzaSyBNpeOwyRq7Lpod2C0DIBhLse19W1eisKs",
             authDomain: "plotheory-b6bd8.firebaseapp.com",
@@ -25,74 +71,10 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Make Firebase services available globally
-        window.auth = auth;
-        window.db = db;
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
     </script>
     
-    <!-- Your script -->
     <script src="script.js" type="module"></script>
-</head>
-<body>
-    <nav>
-        <div class="logo">PLO Theory Lab</div>
-        <div class="nav-links">
-            <a href="#preflop">Preflop</a>
-            <a href="#postflop">Postflop</a>
-            <a href="#simulator">Hand Simulator</a>
-            <a href="#study">Study Room</a>
-        </div>
-    </nav>
-
-    <main>
-        <section id="hand-selector">
-            <div class="card-selector">
-                <h2>Select Your Hand</h2>
-                <div class="hand-builder">
-                    <div class="card-input" id="card1"></div>
-                    <div class="card-input" id="card2"></div>
-                    <div class="card-input" id="card3"></div>
-                    <div class="card-input" id="card4"></div>
-                </div>
-                <div class="position-selector">
-                    <button class="position" data-pos="UTG">UTG</button>
-                    <button class="position" data-pos="MP">MP</button>
-                    <button class="position" data-pos="CO">CO</button>
-                    <button class="position" data-pos="BTN">BTN</button>
-                    <button class="position" data-pos="SB">SB</button>
-                    <button class="position" data-pos="BB">BB</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="analysis">
-            <div class="theory-grid">
-                <div class="preflop-analysis">
-                    <h3>Preflop Analysis</h3>
-                    <div class="hand-strength"></div>
-                    <div class="action-recommendations"></div>
-                    <div class="range-charts"></div>
-                </div>
-                
-                <div class="postflop-analysis">
-                    <h3>Postflop Considerations</h3>
-                    <div class="flop-textures"></div>
-                    <div class="equity-distribution"></div>
-                    <div class="action-strategy"></div>
-                </div>
-                
-                <div class="study-tools">
-                    <h3>Study Tools</h3>
-                    <div class="quiz-module"></div>
-                    <div class="hand-history"></div>
-                    <div class="peer-review"></div>
-                </div>
-            </div>
-        </section>
-    </main>
 </body>
 </html>

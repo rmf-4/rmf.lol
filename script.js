@@ -137,9 +137,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Determine action
         let action = '';
-        if (handStrength >= 50) {
+        if (handStrength >= 60) {
             action = 'Raise';
-            explanation = 'This is a strong hand that plays well from any position.';
+            explanation = 'This is a premium hand that plays well from any position.';
+        } else if (handStrength >= 45) {
+            action = 'Pot';
+            explanation = 'This is a strong hand worth potting, especially if there are limpers.';
         } else if (handStrength >= 35) {
             action = 'Call';
             explanation = 'This hand has potential but be cautious.';
@@ -148,13 +151,25 @@ document.addEventListener('DOMContentLoaded', function() {
             explanation = 'This hand is too weak to play profitably.';
         }
         
-        // Display analysis
+        // Adjust action based on position
+        if (action === 'Call' && (position === 'BTN' || position === 'CO')) {
+            action = 'Pot';
+            explanation += ' From late position, you can play this hand more aggressively.';
+        }
+        
+        // Display analysis with color-coded action
+        let actionClass = '';
+        if (action === 'Raise') actionClass = 'action-raise';
+        else if (action === 'Pot') actionClass = 'action-pot';
+        else if (action === 'Call') actionClass = 'action-call';
+        else actionClass = 'action-fold';
+        
         document.getElementById('preflop-content').innerHTML = `
             <div class="analysis-result">
                 <h3>Hand Analysis: ${cards.join(' ')}</h3>
                 <p>Position: ${position}</p>
                 <p>Hand Strength: ${handStrength}/100</p>
-                <p>Recommended Action: <strong>${action}</strong></p>
+                <p>Recommended Action: <span class="${actionClass}">${action}</span></p>
                 <p>${explanation}</p>
             </div>
         `;
@@ -170,10 +185,32 @@ document.addEventListener('DOMContentLoaded', function() {
             postflopAdvice += '<p><strong>Top Pair Potential:</strong> With an ace in your hand, you have good top pair potential.</p>';
         }
         
+        // Check for double pairs
+        if (pairs >= 2) {
+            postflopAdvice += '<p><strong>Set Potential:</strong> With multiple pairs, you have good set potential.</p>';
+        }
+        
+        // Check for connected cards
+        const rankValues = ranks.map(rank => {
+            if (rank === 'A') return 14;
+            if (rank === 'K') return 13;
+            if (rank === 'Q') return 12;
+            if (rank === 'J') return 11;
+            if (rank === 'T') return 10;
+            return parseInt(rank);
+        });
+        
+        const sortedRanks = [...rankValues].sort((a, b) => a - b);
+        const hasConnected = sortedRanks.some((val, i) => i > 0 && val - sortedRanks[i-1] === 1);
+        
+        if (hasConnected) {
+            postflopAdvice += '<p><strong>Straight Potential:</strong> You have connected cards which gives you straight possibilities.</p>';
+        }
+        
         document.getElementById('postflop-content').innerHTML = `
             <div class="postflop-advice">
                 <h3>Postflop Considerations</h3>
-                ${postflopAdvice}
+                ${postflopAdvice || '<p>No specific postflop advantages detected.</p>'}
                 <p>Remember that board texture is crucial in PLO. Your hand strength can change dramatically based on the community cards.</p>
             </div>
         `;

@@ -102,7 +102,8 @@ if (typeof analyzeHand !== 'function') {
         const preflopContent = document.getElementById('preflop-content');
         if (preflopContent) {
             if (allCardsSelected) {
-                const handStrength = evaluateHandStrength(cards);
+                // Pass position to evaluateHandStrength
+                const handStrength = evaluateHandStrength(cards, position);
                 const recommendation = getRecommendation(handStrength, position);
                 
                 preflopContent.innerHTML = `
@@ -110,7 +111,8 @@ if (typeof analyzeHand !== 'function') {
                         <h3>Hand Strength: ${handStrength.category}</h3>
                         <p>Your hand: ${cards.join(' ')}</p>
                         <p>Position: ${position}</p>
-                        <p>Strength Score: ${handStrength.score}/100</p>
+                        <p>Base Strength: ${handStrength.baseScore}/100</p>
+                        <p>Position-Adjusted Strength: ${handStrength.score}/100</p>
                         <p>Recommended action: ${recommendation.action}</p>
                         <p>${recommendation.explanation}</p>
                     </div>
@@ -792,7 +794,7 @@ function getKeyFlops(rankValues, suits) {
     return `Flops containing ${rankLetters.join(', ')} or three ${dominantSuit} cards.`;
 }
 
-function evaluateHandStrength(cards) {
+function evaluateHandStrength(cards, position) {
     // Extract ranks and suits
     const ranks = cards.map(card => card.charAt(0));
     const suits = cards.map(card => card.slice(1));
@@ -820,25 +822,42 @@ function evaluateHandStrength(cards) {
     const connectedness = calculateConnectedness(rankValues);
     
     // Calculate base score (0-100)
-    let score = 0;
+    let baseScore = 0;
     
     // High cards contribute to score
-    score += Math.min(rankValues[0], 14) * 2; // Max 28 points for an Ace
-    score += Math.min(rankValues[1], 13) * 1; // Max 13 points for a King
+    baseScore += Math.min(rankValues[0], 14) * 2; // Max 28 points for an Ace
+    baseScore += Math.min(rankValues[1], 13) * 1; // Max 13 points for a King
     
     // Pairs add value
-    score += pairCount * 10; // Each pair adds 10 points
+    baseScore += pairCount * 10; // Each pair adds 10 points
     
     // Suited cards add value
-    score += (suitedCount - 1) * 5; // 3 suited = 10 points, 4 suited = 15 points
+    baseScore += (suitedCount - 1) * 5; // 3 suited = 10 points, 4 suited = 15 points
     
     // Connected cards add value
-    score += connectedness * 3; // Max 9 points for perfectly connected
+    baseScore += connectedness * 3; // Max 9 points for perfectly connected
     
-    // Cap score at 100
-    score = Math.min(score, 100);
+    // Cap base score at 100
+    baseScore = Math.min(baseScore, 100);
     
-    // Determine category based on score
+    // Position adjustment factors
+    const positionBonus = {
+        'UTG': -15,  // Early position penalty
+        'MP': -10,   // Middle position small penalty
+        'CO': 0,     // Cutoff neutral
+        'BTN': 10,   // Button bonus
+        'SB': -5,    // Small blind slight penalty
+        'BB': 0      // Big blind neutral
+    };
+    
+    // Apply position adjustment
+    const positionAdjustment = positionBonus[position] || 0;
+    let score = baseScore + positionAdjustment;
+    
+    // Ensure score stays within 0-100 range
+    score = Math.max(0, Math.min(score, 100));
+    
+    // Determine category based on adjusted score
     let category;
     if (score >= 85) category = "Premium";
     else if (score >= 70) category = "Strong";
@@ -847,12 +866,14 @@ function evaluateHandStrength(cards) {
     else category = "Weak";
     
     return {
+        baseScore,
         score,
         category,
         pairCount,
         suitedCount,
         connectedness,
-        highCards: rankValues.slice(0, 2)
+        highCards: rankValues.slice(0, 2),
+        positionAdjustment
     };
 }
 
@@ -885,39 +906,42 @@ function calculateConnectedness(rankValues) {
 }
 
 function getRecommendation(handStrength, position) {
-    const { score, category } = handStrength;
+    const { score, category, positionAdjustment } = handStrength;
     
-    // Early positions require stronger hands
-    const positionFactor = {
-        'UTG': 15,
-        'MP': 10,
-        'CO': 5,
-        'BTN': 0,
-        'SB': 5,
-        'BB': 0
-    };
-    
-    const adjustedScore = score - (positionFactor[position] || 0);
-    
-    if (adjustedScore >= 75) {
+    // Position-specific recommendations
+    if (score >= 75) {
         return {
             action: "Raise",
-            explanation: "This is a strong hand that plays well in any position. Raise to build the pot."
+            explanation: `This is a strong hand that plays well ${positionAdjustment >= 0 ? 'especially' : 'even'} from ${position}. Raise to build the pot.`
         };
-    } else if (adjustedScore >= 60) {
+    } else if (score >= 60) {
+        let action = "Raise";
+        if (position === "UTG" || position === "MP") {
+            action = "Call/Raise";
+        }
         return {
-            action: "Raise/Call",
-            explanation: `This is a ${category.toLowerCase()} hand that can be raised from late position or called from early position.`
+            action,
+            explanation: `This is a ${category.toLowerCase()} hand that ${positionAdjustment >= 0 ? 'benefits from your position' : 'requires caution in this position'}.`
         };
-    } else if (adjustedScore >= 45) {
+    } else if (score >= 45) {
+        let action = "Call";
+        if (position === "BTN") {
+            action = "Call/Raise";
+        } else if (position === "UTG") {
+            action = "Fold/Call";
+        }
         return {
-            action: "Call",
-            explanation: "This hand has potential but isn't strong enough to raise. Call if the price is right."
+            action,
+            explanation: `This hand has potential but isn't strong enough to raise from ${position}. ${position === "BTN" ? "Consider raising from the button to steal blinds." : "Call if the price is right."}`
         };
     } else {
+        let action = "Fold";
+        if (position === "BB") {
+            action = "Check/Fold";
+        }
         return {
-            action: "Fold",
-            explanation: "This hand is too weak to play profitably, especially from this position."
+            action,
+            explanation: `This hand is too weak to play profitably from ${position}. ${position === "BB" ? "Check if you can see a flop for free." : "Save your chips for a better spot."}`
         };
     }
 }
